@@ -1,0 +1,23 @@
+# CHECKLIST DES MISSIONS
+
+- [x] **Mission 00** : Mode d'emploi et règles de travail
+- [x] **Mission 01** : Analyse du dépôt existant
+- [x] **Mission 02** : Cahier des charges
+- [x] **Mission 03** : Architecture technique
+- [x] **Mission 04** : Structure du projet & Monorepo
+- [x] **Mission 05** : Docker et Docker Compose
+- [x] **Mission 06** : PostgreSQL, schéma et migrations
+- [x] **Mission 07** : Redis (Cache & Rate-limiting)
+- [x] **Mission 08** : API serveur
+- [x] **Mission 09** : Authentification, rôles et permissions (RBAC)
+- [x] **Mission 10** : Site public Astro
+- [x] **Mission 11** : Administration Nuxt 3
+- [x] **Mission 12** : Gestion des contenus (CMS)
+- [x] **Mission 13** : Gestion des produits et des stocks
+- [x] **Mission 14** : Commandes et paiements de test
+- [x] **Mission 15** : Tableau de bord et statistiques
+- [x] **Mission 16** : Sécurité, journaux d'activité et sauvegardes
+- [x] **Mission 17** : Assistant IA
+- [x] **Mission 18** : Tests et contrôle qualité
+- [x] **Mission 19** : Préparation au déploiement
+- [x] **Mission 20** : Documentation finale

@@ -1,0 +1,18 @@
+{
+  "name": "web-manager-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gestionnaire Web complet avec Astro, Nuxt 3, Express, PostgreSQL et Redis",
+  "scripts": {
+    "dev": "pnpm --parallel --recursive run dev",
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: webmanager_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-webmanager}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_secure_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-webmanager}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: webmanager_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: webmanager_api
+    restart: always
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_change_in_production_12345}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-webmanager}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_secure_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web-astro:
+    build:
+      context: ./apps/web-astro
+      dockerfile: Dockerfile
+    container_name: webmanager_astro
+    restart: always
+    environment:
+      PORT: 3000
+      PUBLIC_API_URL: http://api:4000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  admin-nuxt:
+    build:
+      context: ./apps/admin-nuxt
+      dockerfile: Dockerfile
+    container_name: webmanager_nuxt
+    restart: always
+    environment:
+      PORT: 3001
+      NUXT_PUBLIC_API_URL: http://api:4000/api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
