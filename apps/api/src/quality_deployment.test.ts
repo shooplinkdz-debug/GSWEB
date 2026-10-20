@@ -80,3 +80,36 @@ describe('Mission 19: Production Deployment Preparation', () => {
     });
   });
 });
+
+describe('Mission 20: Final Documentation & Project Summary', () => {
+  const rootDir = path.resolve(__dirname, '../../..');
+
+  test('README.md should exist and contain installation procedures, API documentation, and feature summary', () => {
+    const readmePath = path.join(rootDir, 'README.md');
+    expect(fs.existsSync(readmePath)).toBe(true);
+
+    const content = fs.readFileSync(readmePath, 'utf-8');
+
+    // Windows installation instructions
+    expect(content).toContain('Installation sous Windows');
+    expect(content).toContain('PowerShell');
+
+    // Docker installation instructions
+    expect(content).toContain('Docker & Docker Compose');
+    expect(content).toContain('docker compose up -d');
+
+    // API documentation section
+    expect(content).toContain('Documentation de l\'API REST Backend');
+    expect(content).toContain('/api/health');
+    expect(content).toContain('/api/auth/login');
+    expect(content).toContain('/api/products');
+    expect(content).toContain('/api/orders');
+
+    // Project summary section
+    expect(content).toContain('Bilan Complet des Fonctionnalités');
+    expect(content).toContain('Astro');
+    expect(content).toContain('Nuxt');
+    expect(content).toContain('PostgreSQL');
+    expect(content).toContain('Redis');
+  });
+});
