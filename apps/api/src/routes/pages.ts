@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import pool from '../db';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { logActivity } from '../services/logger';
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST /api/pages (Admin/Manager)
-router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   const { title, slug, content, is_published } = req.body;
   if (!title || !slug || !content) {
     return res.status(400).json({ error: 'Titre, slug et contenu sont obligatoires.' });
@@ -39,6 +40,7 @@ router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (re
       'INSERT INTO pages (title, slug, content, is_published) VALUES ($1, $2, $3, $4) RETURNING *',
       [title, slug, content, is_published !== false]
     );
+    await logActivity(req.user?.id, 'PAGE_CREATE', { id: result.rows[0].id, slug, title }, req.ip);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la création de la page.' });
@@ -46,7 +48,7 @@ router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (re
 });
 
 // PUT /api/pages/:id (Admin/Manager)
-router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   const { title, slug, content, is_published } = req.body;
   try {
     const result = await pool.query(
@@ -57,6 +59,7 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Page introuvable.' });
     }
+    await logActivity(req.user?.id, 'PAGE_UPDATE', { id: req.params.id, slug, title }, req.ip);
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la page.' });
@@ -64,12 +67,13 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
 });
 
 // DELETE /api/pages/:id (Admin)
-router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res) => {
   try {
     const result = await pool.query('DELETE FROM pages WHERE id = $1 RETURNING id', [req.params.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Page introuvable.' });
     }
+    await logActivity(req.user?.id, 'PAGE_DELETE', { id: req.params.id }, req.ip);
     res.json({ message: 'Page supprimée avec succès.' });
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la suppression de la page.' });

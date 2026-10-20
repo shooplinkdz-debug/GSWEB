@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import pool from '../db';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { getCache, setCache, clearCachePattern } from '../services/redis';
+import { logActivity } from '../services/logger';
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST /api/products (Admin/Manager)
-router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   const { category_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url } = req.body;
   if (!sku || !name || !slug || price === undefined) {
     return res.status(400).json({ error: 'SKU, nom, slug et prix sont obligatoires.' });
@@ -70,6 +71,7 @@ router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (re
     );
 
     await clearCachePattern('products:*');
+    await logActivity(req.user?.id, 'PRODUCT_CREATE', { id: result.rows[0].id, sku, name }, req.ip);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la création du produit.' });
@@ -77,7 +79,7 @@ router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (re
 });
 
 // PUT /api/products/:id (Admin/Manager)
-router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   const { category_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url, is_published } = req.body;
   try {
     const result = await pool.query(
@@ -104,6 +106,7 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
     }
 
     await clearCachePattern('products:*');
+    await logActivity(req.user?.id, 'PRODUCT_UPDATE', { id: req.params.id, sku, name }, req.ip);
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la mise à jour du produit.' });
@@ -111,7 +114,7 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
 });
 
 // DELETE /api/products/:id (Admin)
-router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res) => {
   try {
     const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING id', [req.params.id]);
     if (result.rows.length === 0) {
@@ -119,6 +122,7 @@ router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res
     }
 
     await clearCachePattern('products:*');
+    await logActivity(req.user?.id, 'PRODUCT_DELETE', { id: req.params.id }, req.ip);
     res.json({ message: 'Produit supprimé avec succès.' });
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la suppression du produit.' });

@@ -34,6 +34,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/pages', pageRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', adminRoutes);
 
 // Centralized 404 fallback route handler
 app.use((req, res) => {
