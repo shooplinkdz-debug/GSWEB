@@ -35,6 +35,19 @@ app.use('/api/pages', pageRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Centralized 404 fallback route handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Ressource introuvable' });
+});
+
+// Centralized error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled API Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Erreur interne du serveur',
+  });
+});
+
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`Server API listening on port ${PORT}`);
