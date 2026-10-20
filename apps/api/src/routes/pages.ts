@@ -52,7 +52,7 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
     const result = await pool.query(
       `UPDATE pages SET title = $1, slug = $2, content = $3, is_published = $4, updated_at = CURRENT_TIMESTAMP
        WHERE id = $5 RETURNING *`,
-      [title, slug, content, is_published, req.params.id]
+      [title, slug, content, is_published !== false, req.params.id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Page introuvable.' });
@@ -60,6 +60,19 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la page.' });
+  }
+});
+
+// DELETE /api/pages/:id (Admin)
+router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+  try {
+    const result = await pool.query('DELETE FROM pages WHERE id = $1 RETURNING id', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Page introuvable.' });
+    }
+    res.json({ message: 'Page supprimée avec succès.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la suppression de la page.' });
   }
 });
 
