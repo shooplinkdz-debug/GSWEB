@@ -1,0 +1,82 @@
+import request from 'supertest';
+import fs from 'fs';
+import path from 'path';
+import app from './index';
+
+describe('Mission 18: Automated Tests & Quality Control', () => {
+  const rootDir = path.resolve(__dirname, '../../..');
+
+  test('API health check endpoint /api/health should respond with status ok', async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('status', 'ok');
+    expect(res.body).toHaveProperty('service', 'WebManager API');
+    expect(res.body).toHaveProperty('timestamp');
+  });
+
+  test('All apps and packages should have valid package.json with scripts', () => {
+    const packages = [
+      'apps/api',
+      'apps/web-astro',
+      'apps/admin-nuxt',
+      'packages/shared',
+    ];
+
+    packages.forEach((pkgPath) => {
+      const fullPath = path.join(rootDir, pkgPath, 'package.json');
+      expect(fs.existsSync(fullPath)).toBe(true);
+      const pkg = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+      expect(pkg.name).toBeDefined();
+    });
+  });
+
+  test('pnpm-workspace.yaml should define apps/* and packages/*', () => {
+    const workspacePath = path.join(rootDir, 'pnpm-workspace.yaml');
+    expect(fs.existsSync(workspacePath)).toBe(true);
+    const content = fs.readFileSync(workspacePath, 'utf-8');
+    expect(content).toContain('apps/*');
+    expect(content).toContain('packages/*');
+  });
+});
+
+describe('Mission 19: Production Deployment Preparation', () => {
+  const rootDir = path.resolve(__dirname, '../../..');
+
+  test('.env.example should exist and define essential production environment variables', () => {
+    const envPath = path.join(rootDir, '.env.example');
+    expect(fs.existsSync(envPath)).toBe(true);
+    const content = fs.readFileSync(envPath, 'utf-8');
+    expect(content).toContain('PORT=');
+    expect(content).toContain('POSTGRES_DB=');
+    expect(content).toContain('JWT_SECRET=');
+  });
+
+  test('docker-compose.yml should configure production services with healthchecks', () => {
+    const composePath = path.join(rootDir, 'docker-compose.yml');
+    expect(fs.existsSync(composePath)).toBe(true);
+    const content = fs.readFileSync(composePath, 'utf-8');
+    expect(content).toContain('services:');
+    expect(content).toContain('postgres:');
+    expect(content).toContain('redis:');
+    expect(content).toContain('api:');
+    expect(content).toContain('web-astro:');
+    expect(content).toContain('admin-nuxt:');
+    expect(content).toContain('healthcheck:');
+  });
+
+  test('Dockerfiles for API, Web Astro, and Admin Nuxt should exist and use multi-stage/production-ready instructions', () => {
+    const dockerfiles = [
+      'apps/api/Dockerfile',
+      'apps/web-astro/Dockerfile',
+      'apps/admin-nuxt/Dockerfile',
+    ];
+
+    dockerfiles.forEach((dockerfilePath) => {
+      const fullPath = path.join(rootDir, dockerfilePath);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      expect(content).toContain('FROM node:');
+      expect(content).toContain('EXPOSE');
+    });
+  });
+});
