@@ -29,6 +29,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@web-manager/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -111,6 +114,12 @@ importers:
       tailwindcss:
         specifier: ^3.4.1
         version: 3.4.19(tsx@4.23.15)(yaml@2.9.1)
+
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
 
 packages:
 
