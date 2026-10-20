@@ -8,9 +8,9 @@ Calcul et affichage des métriques clés (CA, nombre de commandes, stock bas, ut
 - Respecter les contraintes techniques, de sécurité et d'architecture du projet.
 
 ## 3. Tâches détaillées
-1. Analyse des prérequis pour cette phase.
-2. Implémentation des composants et services requis.
-3. Vérification des résultats et contrôle de qualité.
+1. [x] Analyse des prérequis pour cette phase.
+2. [x] Implémentation des composants et services requis.
+3. [x] Vérification des résultats et contrôle de qualité.
 
 ## 4. Fichiers concernés
 - Dépend du composant traité dans cette mission.
