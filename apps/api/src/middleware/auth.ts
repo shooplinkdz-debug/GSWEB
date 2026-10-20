@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+export type RoleType = 'ADMIN' | 'MANAGER' | 'CUSTOMER' | 'VENDOR';
+
 export interface AuthRequest extends Request {
   user?: {
     id: number;
     email: string;
-    role: 'ADMIN' | 'MANAGER' | 'CUSTOMER';
+    role: RoleType;
   };
 }
 
@@ -28,7 +30,7 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   }
 }
 
-export function requireRole(allowedRoles: Array<'ADMIN' | 'MANAGER' | 'CUSTOMER'>) {
+export function requireRole(allowedRoles: Array<RoleType>) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Non authentifié.' });

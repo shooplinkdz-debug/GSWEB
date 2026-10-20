@@ -6,6 +6,7 @@ import productRoutes from './routes/products';
 import pageRoutes from './routes/pages';
 import orderRoutes from './routes/orders';
 import adminRoutes from './routes/admin';
+import vendorRoutes from './routes/vendors';
 import { runMigrations, seedDatabase } from './db';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use('/api/pages', pageRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', adminRoutes);
+app.use('/api/vendors', vendorRoutes);
 
 // Centralized 404 fallback route handler
 app.use((req, res) => {

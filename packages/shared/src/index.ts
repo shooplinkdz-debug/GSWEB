@@ -6,6 +6,7 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   CUSTOMER = 'CUSTOMER',
+  VENDOR = 'VENDOR',
 }
 
 export enum OrderStatus {
@@ -24,8 +25,21 @@ export interface User {
   updated_at?: string | Date;
 }
 
+export interface Vendor {
+  id: string | number;
+  user_id: string | number;
+  company_name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
 export interface Product {
   id: string;
+  vendor_id?: string | number;
   name: string;
   slug: string;
   description?: string;
@@ -79,6 +93,6 @@ export interface AuditLog {
 
 export const MONOREPO_INFO = {
   name: 'web-manager-monorepo',
-  apps: ['apps/api', 'apps/web-astro', 'apps/admin-nuxt'],
+  apps: ['apps/api', 'apps/web-astro', 'apps/admin-nuxt', 'apps/web-multivendor'],
   packages: ['packages/shared'],
 };
