@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Accueil">
+  <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 mb-10 shadow-xl">
+    <h1 class="text-4xl font-extrabold mb-4">Bienvenue sur WebManager Store</h1>
+    <p class="text-lg text-indigo-100 max-w-2xl mb-6">
+      Découvrez notre sélection exclusive de produits haut de gamme au meilleur prix, propulsée par notre plateforme e-commerce moderne.
+    </p>
+    <a href="/catalog" class="inline-block bg-white text-indigo-600 font-bold px-6 py-3 rounded-xl shadow hover:bg-indigo-50 transition">
+      Explorer le catalogue
+    </a>
+  </div>
+
+  <section class="my-12">
+    <h2 class="text-2xl font-bold mb-6 text-slate-800">Pourquoi choisir notre boutique ?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+        <h3 class="font-bold text-lg mb-2 text-indigo-600">Qualité Garantie</h3>
+        <p class="text-slate-600 text-sm">Tous nos produits sont vérifiés et contrôlés avec rigueur.</p>
+      </div>
+      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+        <h3 class="font-bold text-lg mb-2 text-indigo-600">Paiement Sécurisé</h3>
+        <p class="text-slate-600 text-sm">Vos transactions bancaires sont 100% sécurisées avec notre gateway de test.</p>
+      </div>
+      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
+        <h3 class="font-bold text-lg mb-2 text-indigo-600">Service Client 24/7</h3>
+        <p class="text-slate-600 text-sm">Notre assistant intelligent répond à vos questions à tout moment.</p>
+      </div>
+    </div>
+  </section>
+</Layout>
