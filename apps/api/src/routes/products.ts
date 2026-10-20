@@ -1,18 +1,26 @@
 import { Router } from 'express';
 import pool from '../db';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { getCache, setCache, clearCachePattern } from '../services/redis';
 
 const router = Router();
 
 // GET /api/products
 router.get('/', async (req, res) => {
   try {
+    const cachedProducts = await getCache('products:all');
+    if (cachedProducts) {
+      return res.json(JSON.parse(cachedProducts));
+    }
+
     const result = await pool.query(
       `SELECT p.*, c.name as category_name
        FROM products p
        LEFT JOIN categories c ON p.category_id = c.id
        ORDER BY p.id DESC`
     );
+
+    await setCache('products:all', JSON.stringify(result.rows), 300);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la récupération des produits.' });
@@ -22,6 +30,12 @@ router.get('/', async (req, res) => {
 // GET /api/products/:slug
 router.get('/:slug', async (req, res) => {
   try {
+    const cacheKey = `products:slug:${req.params.slug}`;
+    const cachedProduct = await getCache(cacheKey);
+    if (cachedProduct) {
+      return res.json(JSON.parse(cachedProduct));
+    }
+
     const result = await pool.query(
       `SELECT p.*, c.name as category_name
        FROM products p
@@ -32,6 +46,8 @@ router.get('/:slug', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produit introuvable.' });
     }
+
+    await setCache(cacheKey, JSON.stringify(result.rows[0]), 300);
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -52,6 +68,8 @@ router.post('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (re
        RETURNING *`,
       [category_id || null, sku, name, slug, description || '', price, stock || 0, low_stock_threshold || 5, image_url || '']
     );
+
+    await clearCachePattern('products:*');
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la création du produit.' });
@@ -72,6 +90,8 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produit introuvable.' });
     }
+
+    await clearCachePattern('products:*');
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la mise à jour du produit.' });
@@ -85,6 +105,8 @@ router.delete('/:id', authenticateToken, requireRole(['ADMIN']), async (req, res
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produit introuvable.' });
     }
+
+    await clearCachePattern('products:*');
     res.json({ message: 'Produit supprimé avec succès.' });
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la suppression du produit.' });
