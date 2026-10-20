@@ -85,7 +85,19 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (
        SET category_id = $1, sku = $2, name = $3, slug = $4, description = $5, price = $6, stock = $7, low_stock_threshold = $8, image_url = $9, is_published = $10, updated_at = CURRENT_TIMESTAMP
        WHERE id = $11
        RETURNING *`,
-      [category_id || null, sku, name, slug, description, price, stock, low_stock_threshold, image_url, is_published, req.params.id]
+      [
+        category_id || null,
+        sku,
+        name,
+        slug,
+        description || '',
+        price,
+        stock !== undefined ? stock : 0,
+        low_stock_threshold !== undefined ? low_stock_threshold : 5,
+        image_url || '',
+        is_published !== false,
+        req.params.id,
+      ]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Produit introuvable.' });
