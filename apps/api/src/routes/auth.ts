@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { logActivity } from '../services/logger';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_change_in_production_12345';
@@ -32,6 +33,8 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
       expiresIn: '7d',
     });
+
+    await logActivity(user.id, 'USER_REGISTER', { email: user.email }, req.ip);
 
     res.status(201).json({ user, token });
   } catch (err) {
@@ -65,6 +68,8 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, {
       expiresIn: '7d',
     });
+
+    await logActivity(user.id, 'USER_LOGIN', { email: user.email }, req.ip);
 
     res.json({
       user: {

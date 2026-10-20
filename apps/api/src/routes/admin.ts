@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import pool from '../db';
-import { authenticateToken, requireRole } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { logActivity } from '../services/logger';
 
 const router = Router();
 
@@ -46,7 +47,7 @@ router.get('/logs', authenticateToken, requireRole(['ADMIN']), async (req, res) 
 });
 
 // POST /api/admin/backup
-router.post('/backup', authenticateToken, requireRole(['ADMIN']), async (req, res) => {
+router.post('/backup', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res) => {
   try {
     const tables = ['users', 'categories', 'products', 'pages', 'orders', 'order_items', 'activity_logs'];
     const backupData: Record<string, any[]> = {};
@@ -55,6 +56,8 @@ router.post('/backup', authenticateToken, requireRole(['ADMIN']), async (req, re
       const data = await pool.query(`SELECT * FROM ${table}`);
       backupData[table] = data.rows;
     }
+
+    await logActivity(req.user?.id, 'BACKUP_CREATE', { timestamp: new Date() }, req.ip);
 
     res.json({
       timestamp: new Date().toISOString(),
@@ -65,14 +68,64 @@ router.post('/backup', authenticateToken, requireRole(['ADMIN']), async (req, re
   }
 });
 
-// POST /api/ai/assistant
-router.post('/ai/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+// POST /api/admin/restore
+router.post('/restore', authenticateToken, requireRole(['ADMIN']), async (req: AuthRequest, res) => {
+  const payload = req.body.backupData || req.body.data || req.body;
+  if (!payload || typeof payload !== 'object' || Object.keys(payload).length === 0) {
+    return res.status(400).json({ error: 'Données de sauvegarde invalides.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Clean existing tables in order of foreign key dependencies if present in payload
+    const knownTables = ['order_items', 'orders', 'products', 'categories', 'pages', 'users'];
+    for (const table of knownTables) {
+      if (Array.isArray(payload[table])) {
+        await client.query(`DELETE FROM ${table}`);
+      }
+    }
+
+    // Restore data for each table present
+    for (const table of knownTables.slice().reverse()) {
+      if (Array.isArray(payload[table]) && payload[table].length > 0) {
+        const rows = payload[table];
+        for (const row of rows) {
+          const keys = Object.keys(row);
+          const values = Object.values(row);
+          const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+          const columns = keys.map((k) => `"${k}"`).join(', ');
+          await client.query(
+            `INSERT INTO ${table} (${columns}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
+            values
+          );
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    await logActivity(req.user?.id, 'BACKUP_RESTORE', { restoredTables: Object.keys(payload) }, req.ip);
+
+    res.json({
+      message: 'Base de données restaurée avec succès.',
+      restoredTables: Object.keys(payload),
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: 'Erreur lors de la restauration de la base de données.' });
+  } finally {
+    client.release();
+  }
+});
+
+// POST /api/admin/ai/assistant and /api/ai/assistant
+const aiAssistantHandler = async (req: AuthRequest, res: any) => {
   const { prompt, type } = req.body;
   if (!prompt) {
     return res.status(400).json({ error: 'Le prompt est obligatoire.' });
   }
 
-  // Assistant IA local / intelligent pour la génération de contenu et l'analyse
   let aiResponse = '';
   if (type === 'product_description') {
     aiResponse = `Description optimisée SEO pour "${prompt}" :\nDécouvrez notre produit exceptionnel "${prompt}", conçu avec des matériaux de haute qualité pour vous offrir une expérience inégalée. Alliant élégance, durabilité et performance supérieure.`;
@@ -87,6 +140,9 @@ router.post('/ai/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']
     type: type || 'general',
     response: aiResponse,
   });
-});
+};
+
+router.post('/ai/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']), aiAssistantHandler);
+router.post('/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']), aiAssistantHandler);
 
 export default router;
