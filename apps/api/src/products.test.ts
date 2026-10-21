@@ -37,6 +37,19 @@ describe('Mission 13: Product Catalog & Stock Management API', () => {
     expect(res.body[0].sku).toBe('ELEC-001');
   });
 
+  it('GET /api/products with search and stock filters should return filtered products', async () => {
+    (mockedPool.query as jest.Mock).mockResolvedValueOnce({
+      rows: [
+        { id: 2, sku: 'CAM-001', name: 'Camera HD', price: 150, stock: 10, vendor_id: 1 },
+      ],
+    });
+
+    const res = await request(app).get('/api/products?search=Camera&in_stock=true&vendor_id=1&min_price=100');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].sku).toBe('CAM-001');
+  });
+
   it('GET /api/products/:slug for non-existent product should return 404', async () => {
     (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: [] });
 

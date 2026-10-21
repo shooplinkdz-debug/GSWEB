@@ -18,6 +18,7 @@ router.get('/stats', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async
     const productsRes = await pool.query('SELECT COUNT(*) as total_products FROM products');
     const lowStockRes = await pool.query('SELECT COUNT(*) as low_stock_count FROM products WHERE stock <= low_stock_threshold');
     const usersRes = await pool.query('SELECT COUNT(*) as total_users FROM users');
+    const vendorsRes = await pool.query("SELECT COUNT(*) as active_vendors FROM vendors WHERE status = 'APPROVED'");
 
     res.json({
       totalOrders: parseInt(ordersRes.rows[0].total_orders, 10),
@@ -25,6 +26,7 @@ router.get('/stats', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async
       totalProducts: parseInt(productsRes.rows[0].total_products, 10),
       lowStockProducts: parseInt(lowStockRes.rows[0].low_stock_count, 10),
       totalUsers: parseInt(usersRes.rows[0].total_users, 10),
+      activeVendors: parseInt(vendorsRes.rows[0].active_vendors || '0', 10),
     });
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la récupération des statistiques.' });
@@ -116,6 +118,81 @@ router.post('/restore', authenticateToken, requireRole(['ADMIN']), async (req: A
     res.status(500).json({ error: 'Erreur lors de la restauration de la base de données.' });
   } finally {
     client.release();
+  }
+});
+
+// GET /api/admin/vendors - List all vendors for admin review
+router.get('/vendors', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT v.*, u.email as user_email
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       ORDER BY v.id DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des vendeurs.' });
+  }
+});
+
+// PUT /api/admin/vendors/:id/status - Update vendor store status (APPROVED, PENDING, REJECTED)
+router.put('/vendors/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const { status } = req.body;
+  if (!status || !['APPROVED', 'PENDING', 'REJECTED'].includes(status)) {
+    return res.status(400).json({ error: 'Statut invalide. Utilisez APPROVED, PENDING ou REJECTED.' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE vendors SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [status, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Boutique vendeur introuvable.' });
+    }
+
+    await logActivity(req.user?.id, 'VENDOR_STATUS_UPDATE', { id: req.params.id, status }, req.ip);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut vendeur.' });
+  }
+});
+
+// GET /api/admin/delivery-rates - List all 58 Wilayas delivery rates
+router.get('/delivery-rates', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM delivery_rates ORDER BY wilaya_code ASC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des tarifs de livraison.' });
+  }
+});
+
+// PUT /api/admin/delivery-rates/:id - Update delivery rate for a Wilaya
+router.put('/delivery-rates/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const { home_fee, desk_fee, is_active } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE delivery_rates
+       SET home_fee = COALESCE($1, home_fee),
+           desk_fee = COALESCE($2, desk_fee),
+           is_active = COALESCE($3, is_active),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4
+       RETURNING *`,
+      [home_fee, desk_fee, is_active, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Tarif de livraison non trouvé.' });
+    }
+
+    await logActivity(req.user?.id, 'DELIVERY_RATE_UPDATE', { id: req.params.id, home_fee, desk_fee }, req.ip);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour des tarifs.' });
   }
 });
 
