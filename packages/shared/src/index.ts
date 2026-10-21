@@ -31,9 +31,13 @@ export interface Vendor {
   id: string | number;
   user_id: string | number;
   company_name: string;
+  store_name?: string;
   slug: string;
   description?: string;
   logo_url?: string;
+  phone?: string;
+  wilaya?: string;
+  rating?: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   created_at?: string | Date;
   updated_at?: string | Date;
