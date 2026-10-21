@@ -25,6 +25,8 @@ export interface User {
   updated_at?: string | Date;
 }
 
+export type VendorProfile = Vendor;
+
 export interface Vendor {
   id: string | number;
   user_id: string | number;

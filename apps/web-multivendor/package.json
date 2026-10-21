@@ -10,6 +10,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
+  "dependencies": {
+    "@web-manager/shared": "workspace:*"
+  },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.11.4",
     "nuxt": "^3.10.3",
