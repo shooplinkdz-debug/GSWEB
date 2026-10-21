@@ -41,7 +41,8 @@ describe('Mission 15: Dashboard Stats & Admin API', () => {
         .mockResolvedValueOnce({ rows: [{ total_orders: '12', total_revenue: '1229.97' }] }) // ordersRes
         .mockResolvedValueOnce({ rows: [{ total_products: '3' }] }) // productsRes
         .mockResolvedValueOnce({ rows: [{ low_stock_count: '1' }] }) // lowStockRes
-        .mockResolvedValueOnce({ rows: [{ total_users: '5' }] }); // usersRes
+        .mockResolvedValueOnce({ rows: [{ total_users: '5' }] }) // usersRes
+        .mockResolvedValueOnce({ rows: [{ active_vendors: '2' }] }); // vendorsRes
 
       const res = await request(app)
         .get('/api/admin/stats')
@@ -54,6 +55,7 @@ describe('Mission 15: Dashboard Stats & Admin API', () => {
         totalProducts: 3,
         lowStockProducts: 1,
         totalUsers: 5,
+        activeVendors: 2,
       });
     });
 
@@ -62,7 +64,8 @@ describe('Mission 15: Dashboard Stats & Admin API', () => {
         .mockResolvedValueOnce({ rows: [{ total_orders: '0', total_revenue: '0' }] }) // ordersRes
         .mockResolvedValueOnce({ rows: [{ total_products: '0' }] }) // productsRes
         .mockResolvedValueOnce({ rows: [{ low_stock_count: '0' }] }) // lowStockRes
-        .mockResolvedValueOnce({ rows: [{ total_users: '1' }] }); // usersRes
+        .mockResolvedValueOnce({ rows: [{ total_users: '1' }] }) // usersRes
+        .mockResolvedValueOnce({ rows: [{ active_vendors: '0' }] }); // vendorsRes
 
       const res = await request(app)
         .get('/api/admin/stats')
@@ -75,6 +78,7 @@ describe('Mission 15: Dashboard Stats & Admin API', () => {
         totalProducts: 0,
         lowStockProducts: 0,
         totalUsers: 1,
+        activeVendors: 0,
       });
     });
   });

@@ -14,6 +14,30 @@ router.get('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req
   }
 });
 
+// PUT /api/orders/:id/status (Admin/Manager)
+router.put('/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const { status } = req.body;
+  const validStatuses = ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Statut de commande invalide.' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [status, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Commande introuvable.' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut de la commande.' });
+  }
+});
+
 // GET /api/orders/:id (Suivi de commande public par ID ou numéro de commande)
 router.get('/:id', async (req, res) => {
   try {

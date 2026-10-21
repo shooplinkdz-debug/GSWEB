@@ -4,11 +4,13 @@
       <div class="flex items-center space-x-3">
         <span class="text-xl font-bold tracking-tight">WebManager Admin</span>
       </div>
-      <nav class="space-x-4 text-sm font-medium">
+      <nav class="space-x-4 text-sm font-medium flex items-center">
         <NuxtLink to="/" class="hover:text-indigo-400">Dashboard</NuxtLink>
         <NuxtLink to="/products" class="hover:text-indigo-400">Produits & Stocks</NuxtLink>
-        <NuxtLink to="/pages" class="hover:text-indigo-400">Pages CMS</NuxtLink>
+        <NuxtLink to="/vendors" class="hover:text-indigo-400">Boutiques Vendeurs</NuxtLink>
         <NuxtLink to="/orders" class="hover:text-indigo-400">Commandes</NuxtLink>
+        <NuxtLink to="/wilayas" class="hover:text-indigo-400">Tarifs Wilayas</NuxtLink>
+        <NuxtLink to="/pages" class="hover:text-indigo-400">Pages CMS</NuxtLink>
         <NuxtLink to="/logs" class="hover:text-indigo-400">Journaux & Backup</NuxtLink>
         <NuxtLink to="/ai" class="hover:text-indigo-400">Assistant IA</NuxtLink>
       </nav>
