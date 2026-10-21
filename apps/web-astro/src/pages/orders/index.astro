@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Suivi de Commande">
+  <div class="max-w-2xl mx-auto">
+    <div class="mb-8 text-center">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+        📦
+      </div>
+      <h1 class="text-3xl font-black text-slate-900 mb-2">Suivre ma Commande</h1>
+      <p class="text-slate-600 text-sm">Entrez votre numéro de commande ou identifiant pour vérifier le statut de livraison.</p>
+    </div>
+
+    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm mb-8">
+      <form id="tracking-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Numéro de Commande ou ID *</label>
+          <input
+            type="text"
+            id="order-id-input"
+            required
+            placeholder="Ex: CMD-1712345678-123 ou ID numerique"
+            class="w-full px-4 py-3 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition shadow text-base"
+        >
+          Rechercher la commande &rarr;
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script id="tracking-index-script">
+    const form = document.getElementById('tracking-form');
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.getElementById('order-id-input')?.value.trim();
+      if (val) {
+        window.location.href = `/orders/${encodeURIComponent(val)}`;
+      }
+    });
+  </script>
+</Layout>

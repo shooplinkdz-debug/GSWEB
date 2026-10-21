@@ -1,0 +1,96 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { formatDZD } from '../../utils/format';
+
+const { slug } = Astro.params;
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
+let vendorData: any = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${API_URL}/api/vendors/${slug}`);
+  if (res.ok) {
+    vendorData = await res.json();
+  } else {
+    notFound = true;
+  }
+} catch (err) {
+  notFound = true;
+}
+
+const vendor = vendorData?.vendor;
+const products = vendorData?.products || [];
+---
+
+<Layout title={vendor ? vendor.company_name : 'Boutique introuvable'}>
+  {notFound || !vendor ? (
+    <div class="text-center py-20 bg-white rounded-2xl border border-slate-200 p-8 max-w-xl mx-auto my-12">
+      <div class="text-5xl mb-4">🏪</div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Boutique introuvable</h1>
+      <p class="text-slate-500 text-sm mb-6">La boutique recherchée n'existe pas ou n'est plus active.</p>
+      <a href="/vendors" class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition">
+        &larr; Liste des boutiques
+      </a>
+    </div>
+  ) : (
+    <div>
+      <!-- Vendor Banner Header -->
+      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-3xl p-8 mb-10 shadow-xl border border-slate-800">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-2xl shadow">
+            {vendor.company_name.substring(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <h1 class="text-3xl font-black">{vendor.company_name}</h1>
+            <span class="text-xs text-emerald-400 font-mono">@{vendor.slug} • Boutique Certifiée</span>
+          </div>
+        </div>
+        <p class="text-slate-300 text-sm max-w-2xl leading-relaxed">
+          {vendor.description || 'Bienvenue sur notre boutique officielle sur MBA Marketplace.'}
+        </p>
+      </div>
+
+      <!-- Vendor Products Section -->
+      <div class="mb-8 flex items-center justify-between">
+        <h2 class="text-2xl font-black text-slate-900">Articles de la boutique ({products.length})</h2>
+      </div>
+
+      {products.length === 0 ? (
+        <div class="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
+          <p class="text-slate-500 text-sm">Cette boutique n'a pas encore ajouté de produits au catalogue.</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {products.map((p: any) => (
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+              <div>
+                <div class="bg-slate-100 h-48 overflow-hidden">
+                  <img src={p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'} alt={p.name} class="w-full h-full object-cover" />
+                </div>
+                <div class="p-5">
+                  <a href={`/products/${p.slug}`} class="font-bold text-slate-900 text-lg hover:text-emerald-600 transition block mb-1">
+                    {p.name}
+                  </a>
+                  <p class="text-xs text-slate-500 line-clamp-2 mb-4 h-8">{p.description || 'Description non renseignée.'}</p>
+                  <div class="flex justify-between items-baseline mb-4">
+                    <span class="text-xl font-black text-emerald-600">{formatDZD(p.price)}</span>
+                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-semibold">Stock: {p.stock}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="p-5 pt-0">
+                <a
+                  href={`/products/${p.slug}`}
+                  class="block text-center w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow"
+                >
+                  Voir l'article
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+</Layout>

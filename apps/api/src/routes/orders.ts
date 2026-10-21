@@ -14,6 +14,33 @@ router.get('/', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req
   }
 });
 
+// GET /api/orders/:id (Suivi de commande public par ID ou numéro de commande)
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let orderResult;
+    if (isNaN(Number(id))) {
+      orderResult = await pool.query('SELECT * FROM orders WHERE order_number = $1', [id]);
+    } else {
+      orderResult = await pool.query('SELECT * FROM orders WHERE id = $1 OR order_number = $2', [id, id]);
+    }
+
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Commande introuvable.' });
+    }
+
+    const order = orderResult.rows[0];
+    const itemsResult = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [order.id]);
+
+    res.json({
+      order,
+      items: itemsResult.rows,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération de la commande.' });
+  }
+});
+
 // POST /api/orders (Public / Checkout avec Test Payment)
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { customer_name, customer_email, shipping_address, items, test_card_number } = req.body;

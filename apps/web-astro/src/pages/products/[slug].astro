@@ -1,0 +1,162 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { formatDZD } from '../../utils/format';
+
+const { slug } = Astro.params;
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
+let product: any = null;
+let notFound = false;
+
+try {
+  const res = await fetch(`${API_URL}/api/products/${slug}`);
+  if (res.ok) {
+    product = await res.json();
+  } else {
+    notFound = true;
+  }
+} catch (err) {
+  notFound = true;
+}
+---
+
+<Layout title={product ? product.name : 'Produit introuvable'}>
+  {notFound || !product ? (
+    <div class="text-center py-20 bg-white rounded-2xl border border-slate-200 p-8 max-w-xl mx-auto my-12">
+      <div class="text-5xl mb-4">🔍</div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-2">Produit introuvable</h1>
+      <p class="text-slate-500 text-sm mb-6">Le produit demandé n'existe pas ou n'est plus disponible.</p>
+      <a href="/catalog" class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition">
+        &larr; Retour au catalogue
+      </a>
+    </div>
+  ) : (
+    <div>
+      <nav class="flex items-center text-xs font-semibold text-slate-500 mb-6 gap-2">
+        <a href="/" class="hover:text-emerald-600">Accueil</a>
+        <span>&rsaquo;</span>
+        <a href="/catalog" class="hover:text-emerald-600">Catalogue</a>
+        <span>&rsaquo;</span>
+        <span class="text-slate-800 line-clamp-1">{product.name}</span>
+      </nav>
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 sm:p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Image Container -->
+        <div class="relative bg-slate-100 rounded-2xl overflow-hidden min-h-[320px] flex items-center justify-center">
+          <img
+            src={product.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}
+            alt={product.name}
+            class="w-full h-full object-cover"
+          />
+          {product.category_name && (
+            <span class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg">
+              {product.category_name}
+            </span>
+          )}
+        </div>
+
+        <!-- Details Container -->
+        <div class="flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">SKU: {product.sku}</span>
+              {product.vendor_id && (
+                <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md">Vendeur Partenaire</span>
+              )}
+            </div>
+
+            <h1 class="text-3xl font-black text-slate-900 mb-4">{product.name}</h1>
+
+            <div class="mb-6 pb-6 border-b border-slate-100">
+              <div class="text-3xl font-black text-emerald-600 mb-2">
+                {formatDZD(product.price)}
+              </div>
+              <div class="flex items-center gap-2 text-xs font-medium">
+                <span class={`px-2.5 py-1 rounded-full ${product.stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                  {product.stock > 0 ? `En stock (${product.stock} unités)` : 'En rupture de stock'}
+                </span>
+                <span class="text-slate-500">• TVA Incluse</span>
+              </div>
+            </div>
+
+            <div class="mb-8">
+              <h3 class="text-sm font-bold text-slate-900 mb-2">Description</h3>
+              <p class="text-slate-600 text-sm leading-relaxed">
+                {product.description || 'Aucune description spécifique fournie pour ce produit. Produit authentique et sous garantie.'}
+              </p>
+            </div>
+          </div>
+
+          <!-- Add to Cart Form -->
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+            <div class="flex items-center justify-between mb-4">
+              <label class="text-sm font-bold text-slate-800">Quantité</label>
+              <div class="flex items-center border border-slate-300 rounded-xl bg-white overflow-hidden">
+                <button id="qty-minus" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 font-bold">-</button>
+                <input id="qty-input" type="number" value="1" min="1" max={product.stock || 1} class="w-12 text-center text-sm font-bold border-none outline-none" />
+                <button id="qty-plus" class="px-3 py-1.5 text-slate-600 hover:bg-slate-100 font-bold">+</button>
+              </div>
+            </div>
+
+            <button
+              id="add-btn"
+              disabled={product.stock <= 0}
+              class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 text-white font-black py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2 text-base"
+            >
+              <span>🛒</span>
+              <span>{product.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <script id="product-detail-script" data-product={JSON.stringify(product)}>
+    const minusBtn = document.getElementById('qty-minus');
+    const plusBtn = document.getElementById('qty-plus');
+    const qtyInput = document.getElementById('qty-input');
+    const addBtn = document.getElementById('add-btn');
+
+    minusBtn?.addEventListener('click', () => {
+      let val = parseInt(qtyInput.value) || 1;
+      if (val > 1) qtyInput.value = val - 1;
+    });
+
+    plusBtn?.addEventListener('click', () => {
+      let val = parseInt(qtyInput.value) || 1;
+      qtyInput.value = val + 1;
+    });
+
+    addBtn?.addEventListener('click', () => {
+      try {
+        const prodData = JSON.parse(document.getElementById('product-detail-script').getAttribute('data-product') || '{}');
+        const qty = parseInt(qtyInput.value) || 1;
+
+        if (!prodData.id) return;
+
+        const cart = JSON.parse(localStorage.getItem('mba_cart') || '[]');
+        const existingIndex = cart.findIndex((item) => item.id === prodData.id);
+
+        if (existingIndex > -1) {
+          cart[existingIndex].quantity += qty;
+        } else {
+          cart.push({
+            id: prodData.id,
+            name: prodData.name,
+            price: prodData.price,
+            image_url: prodData.image_url,
+            slug: prodData.slug,
+            quantity: qty
+          });
+        }
+
+        localStorage.setItem('mba_cart', JSON.stringify(cart));
+        if (window.updateCartBadge) window.updateCartBadge();
+        alert(`Ajouté au panier (${qty} x ${prodData.name}) !`);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  </script>
+</Layout>

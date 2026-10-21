@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
+let vendors = [];
+let errorMsg = '';
+
+try {
+  const res = await fetch(`${API_URL}/api/vendors`);
+  if (res.ok) {
+    vendors = await res.json();
+  } else {
+    errorMsg = 'Impossible de charger la liste des boutiques.';
+  }
+} catch (err) {
+  errorMsg = 'Erreur lors de la connexion au serveur API.';
+}
+---
+
+<Layout title="Boutiques Partenaires">
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-slate-900 mb-2">Boutiques Partenaires</h1>
+    <p class="text-slate-600 text-sm">Découvrez les commerçants et vendeurs certifiés sur MBA Marketplace.</p>
+  </div>
+
+  {errorMsg && (
+    <div class="p-6 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl mb-8 text-sm">
+      ⚠️ {errorMsg}
+    </div>
+  )}
+
+  {!errorMsg && vendors.length === 0 && (
+    <div class="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8">
+      <div class="text-4xl mb-4">🏪</div>
+      <h3 class="text-lg font-bold text-slate-800 mb-2">Aucune boutique disponible</h3>
+      <p class="text-slate-500 text-sm">Revenez bientôt pour découvrir de nouvelles boutiques partenaires.</p>
+    </div>
+  )}
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {vendors.map((v: any) => (
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+        <div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xl mb-4">
+            {v.company_name.substring(0, 2).toUpperCase()}
+          </div>
+          <h2 class="text-xl font-bold text-slate-900 mb-1">{v.company_name}</h2>
+          <span class="inline-block bg-slate-100 text-slate-600 text-xs font-mono px-2.5 py-0.5 rounded mb-4">
+            @{v.slug}
+          </span>
+          <p class="text-xs text-slate-500 line-clamp-3 mb-6">
+            {v.description || 'Boutique partenaire certifiée proposant des articles de qualité en Algérie.'}
+          </p>
+        </div>
+        <div>
+          <a
+            href={`/vendors/${v.slug}`}
+            class="block text-center w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow"
+          >
+            Visiter la boutique &rarr;
+          </a>
+        </div>
+      </div>
+    ))}
+  </div>
+</Layout>
