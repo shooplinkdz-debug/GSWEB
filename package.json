@@ -10,7 +10,8 @@
     "lint": "pnpm --recursive run lint"
   },
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "devDependencies": {
     "typescript": "^5.3.3"

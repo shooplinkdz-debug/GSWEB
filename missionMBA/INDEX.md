@@ -9,7 +9,7 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | ID | Mission | Fichier | Dépendances | Statut |
 | :--- | :--- | :--- | :--- | :--- |
 | **00** | Audit de l'existant | `00_AUDIT_EXISTANT.md` | Aucun | En cours |
-| **01** | Architecture du projet | `01_ARCHITECTURE_PROJET.md` | Mission 00 | À faire |
+| **01** | Architecture du projet | `01_ARCHITECTURE_PROJET.md` | Mission 00 | Terminée |
 | **02** | Plan de développement | `02_PLAN_DEVELOPPEMENT.md` | Missions 00, 01 | À faire |
 | **03** | Environnement & Dépendances | `03_ENVIRONNEMENT_DEPENDANCES.md` | Missions 00, 01 | À faire |
 | **04** | Base de données PostgreSQL | `04_BASE_DE_DONNEES.md` | Missions 01, 03 | À faire |
