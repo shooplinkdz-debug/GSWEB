@@ -93,6 +93,18 @@ export interface AuditLog {
   created_at?: string | Date;
 }
 
+export interface DeliveryRate {
+  id: string | number;
+  wilaya_code: number;
+  wilaya_name: string;
+  wilaya_name_ar?: string;
+  home_fee: number;
+  desk_fee: number;
+  is_active: boolean;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
 export const MONOREPO_INFO = {
   name: 'web-manager-monorepo',
   apps: ['apps/api', 'apps/web-astro', 'apps/admin-nuxt', 'apps/web-multivendor'],
