@@ -14,7 +14,7 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | **03** | Environnement & Dépendances | `03_ENVIRONNEMENT_DEPENDANCES.md` | Missions 00, 01 | Terminée |
 | **04** | Base de données PostgreSQL | `04_BASE_DE_DONNEES.md` | Missions 01, 03 | Terminée |
 | **05** | Authentification & Autorisations (RBAC) | `05_AUTHENTIFICATION_AUTORISATIONS.md` | Mission 04 | Terminée |
-| **06** | API Backend Express | `06_API_BACKEND.md` | Missions 04, 05 | À faire |
+| **06** | API Backend Express | `06_API_BACKEND.md` | Missions 04, 05 | Terminée |
 | **07** | MBA Marketplace (Front Public Client) | `07_MBA_MARKETPLACE.md` | Missions 05, 06 | À faire |
 | **08** | MBA Gestionnaire (Back-office Privé) | `08_MBA_GESTIONNAIRE.md` | Missions 05, 06 | À faire |
 | **09** | Catalogue Produits & Catégories | `09_CATALOGUE_PRODUITS.md` | Missions 04, 06 | À faire |
