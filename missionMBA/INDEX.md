@@ -19,7 +19,7 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | **08** | MBA Gestionnaire (Back-office Privé) | `08_MBA_GESTIONNAIRE.md` | Missions 05, 06 | Terminée |
 | **09** | Catalogue Produits & Catégories | `09_CATALOGUE_PRODUITS.md` | Missions 04, 06 | Terminée |
 | **10** | Boutiques Multi-Vendeurs | `10_BOUTIQUES_VENDEURS.md` | Missions 05, 06, 09 | À faire |
-| **11** | Panier & Commandes Multi-Boutiques | `11_PANIER_COMMANDES.md` | Missions 09, 10 | À faire |
+| **11** | Panier & Commandes Multi-Boutiques | `11_PANIER_COMMANDES.md` | Missions 09, 10 | Terminée |
 | **12** | Logistique & Livraison Algérie (58 Wilayas) | `12_LIVRAISON_ALGERIE.md` | Missions 10, 11 | À faire |
 | **13** | Paiements (COD) & Commissions Vendeurs | `13_PAIEMENT_ET_COMMISSION.md` | Missions 10, 11 | À faire |
 | **14** | Recherche Intelligente & Assistant IA | `14_RECHERCHE_INTELLIGENTE_IA.md` | Missions 06, 09 | À faire |
