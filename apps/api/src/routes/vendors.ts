@@ -22,6 +22,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/vendors/admin/all - Admin route to list all vendors regardless of status
+router.get('/admin/all', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT v.*, u.email as user_email
+       FROM vendors v
+       JOIN users u ON v.user_id = u.id
+       ORDER BY v.id DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des vendeurs.' });
+  }
+});
+
 // GET /api/vendors/me - Current user's vendor profile
 router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
   try {
@@ -35,6 +50,59 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la récupération du profil vendeur.' });
+  }
+});
+
+// PUT /api/vendors/me - Update current user's vendor store profile
+router.put('/me', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const company_name = req.body.company_name || req.body.store_name;
+  const logo_url = req.body.logo_url || req.body.logo;
+  const { slug, description, phone, wilaya } = req.body;
+
+  try {
+    const existingVendor = await pool.query(`SELECT * FROM vendors WHERE user_id = $1`, [req.user?.id]);
+    if (existingVendor.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil vendeur non trouvé.' });
+    }
+
+    const current = existingVendor.rows[0];
+    const newSlug = slug || current.slug;
+    const newCompanyName = company_name || current.company_name;
+
+    if (slug && slug !== current.slug) {
+      const slugCheck = await pool.query(`SELECT id FROM vendors WHERE slug = $1 AND id != $2`, [slug, current.id]);
+      if (slugCheck.rows.length > 0) {
+        return res.status(400).json({ error: 'Ce slug de boutique est déjà utilisé.' });
+      }
+    }
+
+    const result = await pool.query(
+      `UPDATE vendors
+       SET company_name = $1,
+           slug = $2,
+           description = $3,
+           logo_url = $4,
+           phone = $5,
+           wilaya = $6,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $7
+       RETURNING *`,
+      [
+        newCompanyName,
+        newSlug,
+        description !== undefined ? description : current.description,
+        logo_url !== undefined ? logo_url : current.logo_url,
+        phone !== undefined ? phone : current.phone,
+        wilaya !== undefined ? wilaya : current.wilaya,
+        current.id,
+      ]
+    );
+
+    await clearCachePattern('vendors:*');
+    await logActivity(req.user?.id, 'VENDOR_PROFILE_UPDATE', { id: current.id, company_name: newCompanyName }, req.ip);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du profil vendeur.' });
   }
 });
 
@@ -108,8 +176,19 @@ router.post('/me/products', authenticateToken, requireRole(['VENDOR', 'ADMIN', '
   }
 
   try {
-    const vendorRes = await pool.query(`SELECT id FROM vendors WHERE user_id = $1`, [req.user?.id]);
-    const vendorId = vendorRes.rows.length > 0 ? vendorRes.rows[0].id : null;
+    const vendorRes = await pool.query(`SELECT id, status FROM vendors WHERE user_id = $1`, [req.user?.id]);
+    const vendor = vendorRes.rows.length > 0 ? vendorRes.rows[0] : null;
+
+    if (req.user?.role === 'VENDOR') {
+      if (!vendor) {
+        return res.status(404).json({ error: 'Profil vendeur introuvable.' });
+      }
+      if (vendor.status !== 'APPROVED') {
+        return res.status(403).json({ error: 'Seules les boutiques approuvées peuvent publier des produits.' });
+      }
+    }
+
+    const vendorId = vendor ? vendor.id : null;
 
     const result = await pool.query(
       `INSERT INTO products (category_id, vendor_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url)
@@ -142,8 +221,19 @@ router.put('/me/products/:id', authenticateToken, requireRole(['VENDOR', 'ADMIN'
   const { category_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url, is_published } = req.body;
 
   try {
-    const vendorRes = await pool.query(`SELECT id FROM vendors WHERE user_id = $1`, [req.user?.id]);
-    const vendorId = vendorRes.rows.length > 0 ? vendorRes.rows[0].id : null;
+    const vendorRes = await pool.query(`SELECT id, status FROM vendors WHERE user_id = $1`, [req.user?.id]);
+    const vendor = vendorRes.rows.length > 0 ? vendorRes.rows[0] : null;
+
+    if (req.user?.role === 'VENDOR') {
+      if (!vendor) {
+        return res.status(404).json({ error: 'Profil vendeur introuvable.' });
+      }
+      if (vendor.status !== 'APPROVED') {
+        return res.status(403).json({ error: 'Seules les boutiques approuvées peuvent publier des produits.' });
+      }
+    }
+
+    const vendorId = vendor ? vendor.id : null;
 
     let checkQuery = `SELECT * FROM products WHERE id = $1`;
     let checkParams: any[] = [req.params.id];
@@ -212,6 +302,30 @@ router.delete('/me/products/:id', authenticateToken, requireRole(['VENDOR', 'ADM
   }
 });
 
+// PUT /api/vendors/:id/status - Update vendor store approval status (Admin/Manager)
+router.put('/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const { status } = req.body;
+  if (!status || !['APPROVED', 'PENDING', 'REJECTED'].includes(status)) {
+    return res.status(400).json({ error: 'Statut invalide. Utilisez APPROVED, PENDING ou REJECTED.' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE vendors SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [status, req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Boutique vendeur introuvable.' });
+    }
+
+    await logActivity(req.user?.id, 'VENDOR_STATUS_UPDATE', { id: req.params.id, status }, req.ip);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut vendeur.' });
+  }
+});
+
 // GET /api/vendors/:slug - Vendor store detail with products
 router.get('/:slug', async (req, res) => {
   try {
@@ -248,7 +362,10 @@ router.get('/:slug', async (req, res) => {
 
 // POST /api/vendors - Create/Register vendor store profile
 router.post('/', authenticateToken, async (req: AuthRequest, res) => {
-  const { company_name, slug, description, logo_url } = req.body;
+  const company_name = req.body.company_name || req.body.store_name;
+  const logo_url = req.body.logo_url || req.body.logo;
+  const { slug, description, phone, wilaya, status } = req.body;
+
   if (!company_name || !slug) {
     return res.status(400).json({ error: 'Le nom de l’entreprise et le slug sont obligatoires.' });
   }
@@ -259,11 +376,22 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Un profil vendeur ou un slug similaire existe déjà.' });
     }
 
+    const initialStatus = status || 'APPROVED';
+
     const result = await pool.query(
-      `INSERT INTO vendors (user_id, company_name, slug, description, logo_url, status)
-       VALUES ($1, $2, $3, $4, $5, 'APPROVED')
+      `INSERT INTO vendors (user_id, company_name, slug, description, logo_url, phone, wilaya, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [req.user?.id, company_name, slug, description || '', logo_url || '']
+      [
+        req.user?.id,
+        company_name,
+        slug,
+        description || '',
+        logo_url || '',
+        phone || '',
+        wilaya || '',
+        initialStatus,
+      ]
     );
 
     // Upgrade user role to VENDOR if currently CUSTOMER
