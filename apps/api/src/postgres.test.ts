@@ -5,8 +5,20 @@ import pool, { runMigrations, seedDatabase } from './db';
 describe('Mission 06: PostgreSQL, Schema and Migrations Tests', () => {
   const migrationFilePath = path.join(__dirname, 'db/migrations/001_initial_schema.sql');
 
+  const deliveryMigrationFilePath = path.join(__dirname, 'db/migrations/003_delivery_rates.sql');
+
   test('Migration file 001_initial_schema.sql should exist', () => {
     expect(fs.existsSync(migrationFilePath)).toBe(true);
+  });
+
+  test('Migration file 003_delivery_rates.sql should exist and define delivery_rates schema', () => {
+    expect(fs.existsSync(deliveryMigrationFilePath)).toBe(true);
+    const sql = fs.readFileSync(deliveryMigrationFilePath, 'utf-8');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS delivery_rates');
+    expect(sql).toContain('wilaya_code INT UNIQUE NOT NULL');
+    expect(sql).toContain('home_fee NUMERIC(10, 2)');
+    expect(sql).toContain('desk_fee NUMERIC(10, 2)');
+    expect(sql).toContain('CREATE INDEX IF NOT EXISTS idx_delivery_rates_wilaya_code ON delivery_rates(wilaya_code)');
   });
 
   test('Migration SQL should define all core tables with constraints', () => {
