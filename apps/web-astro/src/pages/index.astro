@@ -1,33 +1,187 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { formatDZD } from '../utils/format';
+
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
+let products = [];
+let vendors = [];
+let apiError = false;
+
+try {
+  const prodRes = await fetch(`${API_URL}/api/products`);
+  if (prodRes.ok) {
+    products = await prodRes.json();
+  } else {
+    apiError = true;
+  }
+} catch (err) {
+  apiError = true;
+}
+
+try {
+  const vendRes = await fetch(`${API_URL}/api/vendors`);
+  if (vendRes.ok) {
+    vendors = await vendRes.json();
+  }
+} catch (err) {
+  // Silent catch
+}
 ---
 
 <Layout title="Accueil">
-  <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-10 mb-10 shadow-xl">
-    <h1 class="text-4xl font-extrabold mb-4">Bienvenue sur WebManager Store</h1>
-    <p class="text-lg text-indigo-100 max-w-2xl mb-6">
-      Découvrez notre sélection exclusive de produits haut de gamme au meilleur prix, propulsée par notre plateforme e-commerce moderne.
-    </p>
-    <a href="/catalog" class="inline-block bg-white text-indigo-600 font-bold px-6 py-3 rounded-xl shadow hover:bg-indigo-50 transition">
-      Explorer le catalogue
-    </a>
+  <!-- Hero Section -->
+  <div class="relative bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 sm:p-12 mb-12 shadow-2xl overflow-hidden border border-slate-800">
+    <div class="relative z-10 max-w-3xl">
+      <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold px-3 py-1 rounded-full text-xs mb-6">
+        <span>📍 Marketplace N°1 en Algérie</span>
+        <span>•</span>
+        <span>58 Wilayas</span>
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-black tracking-tight mb-4 leading-tight">
+        Achetez et vendez en toute sérénité en <span class="text-emerald-400">Dinars Algériens</span>
+      </h1>
+      <p class="text-slate-300 text-base sm:text-lg mb-8 leading-relaxed">
+        Découvrez les boutiques locales, explorez des milliers de produits certifiés et profitez du paiement à la livraison dans toutes les wilayas d'Algérie.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="/catalog" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2">
+          <span>Explorer le catalogue</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+        <a href="/vendors" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-6 py-3.5 rounded-xl border border-slate-700 transition">
+          Découvrir nos boutiques
+        </a>
+      </div>
+    </div>
   </div>
 
-  <section class="my-12">
-    <h2 class="text-2xl font-bold mb-6 text-slate-800">Pourquoi choisir notre boutique ?</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-        <h3 class="font-bold text-lg mb-2 text-indigo-600">Qualité Garantie</h3>
-        <p class="text-slate-600 text-sm">Tous nos produits sont vérifiés et contrôlés avec rigueur.</p>
+  <!-- Reassurance Grid -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+    <div class="p-6 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-start gap-4">
+      <div class="p-3 bg-emerald-100 text-emerald-700 rounded-xl font-bold">
+        🇩🇿
       </div>
-      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-        <h3 class="font-bold text-lg mb-2 text-indigo-600">Paiement Sécurisé</h3>
-        <p class="text-slate-600 text-sm">Vos transactions bancaires sont 100% sécurisées avec notre gateway de test.</p>
+      <div>
+        <h3 class="font-bold text-slate-900 text-base mb-1">Livraison 58 Wilayas</h3>
+        <p class="text-slate-600 text-xs">Expédition rapide et suivie dans toutes les communes d'Algérie.</p>
       </div>
-      <div class="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-        <h3 class="font-bold text-lg mb-2 text-indigo-600">Service Client 24/7</h3>
-        <p class="text-slate-600 text-sm">Notre assistant intelligent répond à vos questions à tout moment.</p>
+    </div>
+    <div class="p-6 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-start gap-4">
+      <div class="p-3 bg-indigo-100 text-indigo-700 rounded-xl font-bold">
+        💵
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-900 text-base mb-1">Paiement à la Livraison</h3>
+        <p class="text-slate-600 text-xs">Réglez votre commande en espèces (DZD) à la réception du colis.</p>
+      </div>
+    </div>
+    <div class="p-6 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-start gap-4">
+      <div class="p-3 bg-amber-100 text-amber-700 rounded-xl font-bold">
+        🏪
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-900 text-base mb-1">Boutiques Vérifiées</h3>
+        <p class="text-slate-600 text-xs">Vendeurs indépendants et commerçants algériens certifiés.</p>
       </div>
     </div>
   </section>
+
+  <!-- Featured Products Section -->
+  <section class="mb-16">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-2xl font-black text-slate-900">Produits en vedette</h2>
+        <p class="text-slate-500 text-sm">Les meilleures affaires sélectionnées pour vous</p>
+      </div>
+      <a href="/catalog" class="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-1">
+        Voir tout ({products.length}) &rarr;
+      </a>
+    </div>
+
+    {apiError && (
+      <div class="p-6 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-sm">
+        ⚠️ Impossible de contacter le serveur d'API. Assurez-vous que l'API est en cours d'exécution.
+      </div>
+    )}
+
+    {!apiError && products.length === 0 && (
+      <div class="text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">
+        <p class="text-slate-500 font-medium">Aucun produit disponible pour le moment.</p>
+      </div>
+    )}
+
+    {!apiError && products.length > 0 && (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {products.slice(0, 8).map((p: any) => (
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+            <div>
+              <div class="relative bg-slate-100 h-48 overflow-hidden">
+                <img
+                  src={p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}
+                  alt={p.name}
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                {p.category_name && (
+                  <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
+                    {p.category_name}
+                  </span>
+                )}
+              </div>
+              <div class="p-5">
+                <a href={`/products/${p.slug}`} class="font-bold text-slate-800 text-lg hover:text-emerald-600 transition line-clamp-1 block mb-1">
+                  {p.name}
+                </a>
+                <p class="text-xs text-slate-500 line-clamp-2 mb-4 h-8">
+                  {p.description || 'Produit de qualité disponible en Algérie.'}
+                </p>
+                <div class="flex items-baseline justify-between">
+                  <span class="text-xl font-black text-emerald-600">
+                    {formatDZD(p.price)}
+                  </span>
+                  <span class={`text-xs font-semibold px-2 py-0.5 rounded ${p.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                    {p.stock > 0 ? `En stock (${p.stock})` : 'Rupture'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 pt-0">
+              <a
+                href={`/products/${p.slug}`}
+                class="block text-center w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow"
+              >
+                Voir le produit
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+
+  <!-- Vendors Showcase Section -->
+  {vendors.length > 0 && (
+    <section class="bg-slate-900 text-white rounded-3xl p-8 mb-12">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-black">Boutiques à la une</h2>
+          <p class="text-slate-400 text-sm">Découvrez nos vendeurs certifiés</p>
+        </div>
+        <a href="/vendors" class="text-emerald-400 font-bold text-sm hover:underline">
+          Toutes les boutiques &rarr;
+        </a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {vendors.slice(0, 3).map((v: any) => (
+          <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-2xl">
+            <h3 class="font-bold text-lg text-white mb-1">{v.company_name}</h3>
+            <p class="text-xs text-slate-400 mb-4 line-clamp-2">{v.description || 'Boutique certifiée Ma Boutique Algérienne'}</p>
+            <a href={`/vendors/${v.slug}`} class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">
+              Visiter la boutique
+            </a>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 </Layout>

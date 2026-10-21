@@ -1,0 +1,223 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { ALGERIAN_WILAYAS } from '../utils/format';
+---
+
+<Layout title="Tunnel de Commande">
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-slate-900 mb-2">Tunnel de Commande</h1>
+      <p class="text-slate-600 text-sm">Complétez vos informations de livraison en Algérie pour valider votre achat.</p>
+    </div>
+
+    <div class="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm space-y-8">
+      <!-- Order Form -->
+      <form id="checkout-form" class="space-y-6">
+        <!-- Contact Info -->
+        <div>
+          <h2 class="text-lg font-black text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>👤</span>
+            <span>1. Informations Client</span>
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nom Complet *</label>
+              <input
+                type="text"
+                id="customer-name"
+                required
+                placeholder="Ex: Karim Benali"
+                class="w-full px-4 py-2.5 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Email *</label>
+              <input
+                type="email"
+                id="customer-email"
+                required
+                placeholder="karim@example.com"
+                class="w-full px-4 py-2.5 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Info -->
+        <div>
+          <h2 class="text-lg font-black text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>📍</span>
+            <span>2. Adresse de Livraison (58 Wilayas)</span>
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Wilaya d'Algérie *</label>
+              <select
+                id="shipping-wilaya"
+                required
+                class="w-full px-4 py-2.5 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+              >
+                <option value="">Sélectionnez votre wilaya</option>
+                {ALGERIAN_WILAYAS.map((w) => (
+                  <option value={w}>{w}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Détaillée (Commune, Rue, Numéro) *</label>
+              <textarea
+                id="shipping-address-detail"
+                required
+                rows="3"
+                placeholder="Ex: Rue Didouche Mourad, Commune d'Alger Centre"
+                class="w-full px-4 py-2.5 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Options -->
+        <div>
+          <h2 class="text-lg font-black text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>💳</span>
+            <span>3. Mode de Règlement</span>
+          </h2>
+          <div class="space-y-3">
+            <label class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer hover:bg-slate-50 border-emerald-500 bg-emerald-50/50">
+              <input type="radio" name="payment_mode" value="COD" checked class="text-emerald-600 focus:ring-emerald-500" />
+              <div>
+                <span class="font-bold text-slate-900 text-sm block">Paiement à la livraison (Cash on Delivery)</span>
+                <span class="text-xs text-slate-500">Réglez en espèces (DZD) à l'agent de livraison lors de la réception.</span>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-4 border rounded-2xl cursor-pointer hover:bg-slate-50 border-slate-200">
+              <input type="radio" name="payment_mode" value="TEST_CARD" class="text-emerald-600 focus:ring-emerald-500" />
+              <div>
+                <span class="font-bold text-slate-900 text-sm block">Carte Bancaire / CIB de Test</span>
+                <span class="text-xs text-slate-500">Paiement instantané de démonstration (Entrez 4242 4242 4242 4242).</span>
+              </div>
+            </label>
+
+            <div id="test-card-input-container" class="hidden pl-8 pt-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Numéro de carte test (Ex: 4242 4242 4242 4242)</label>
+              <input
+                type="text"
+                id="test-card-number"
+                placeholder="4242 4242 4242 4242"
+                class="w-full px-4 py-2 border rounded-xl text-sm border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none font-mono"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="checkout-error" class="hidden p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium"></div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          id="submit-order-btn"
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-2xl transition shadow-lg text-lg flex items-center justify-center gap-2"
+        >
+          <span>Confirmer et Placer la Commande</span>
+          <span>&rarr;</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script id="checkout-script">
+    const API_URL = window.location.origin;
+
+    const paymentRadios = document.querySelectorAll('input[name="payment_mode"]');
+    const testCardContainer = document.getElementById('test-card-input-container');
+
+    paymentRadios.forEach((radio) => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'TEST_CARD') {
+          testCardContainer?.classList.remove('hidden');
+        } else {
+          testCardContainer?.classList.add('hidden');
+        }
+      });
+    });
+
+    const form = document.getElementById('checkout-form');
+    const errorEl = document.getElementById('checkout-error');
+    const submitBtn = document.getElementById('submit-order-btn');
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl?.classList.add('hidden');
+
+      const cart = JSON.parse(localStorage.getItem('mba_cart') || '[]');
+      if (!cart || cart.length === 0) {
+        if (errorEl) {
+          errorEl.textContent = 'Votre panier est vide. Veuillez ajouter des produits avant de commander.';
+          errorEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const name = document.getElementById('customer-name')?.value;
+      const email = document.getElementById('customer-email')?.value;
+      const wilaya = document.getElementById('shipping-wilaya')?.value;
+      const addressDetail = document.getElementById('shipping-address-detail')?.value;
+      const paymentMode = document.querySelector('input[name="payment_mode"]:checked')?.value;
+      const cardNumber = document.getElementById('test-card-number')?.value;
+
+      const fullAddress = `[${wilaya}] ${addressDetail}`;
+
+      const items = cart.map((item) => ({
+        product_id: item.id,
+        quantity: item.quantity || 1,
+      }));
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Traitement de la commande en cours...';
+
+      try {
+        const payload = {
+          customer_name: name,
+          customer_email: email,
+          shipping_address: fullAddress,
+          items: items,
+          test_card_number: paymentMode === 'TEST_CARD' ? (cardNumber || '4242 4242 4242 4242') : '4242 4242 4242 4242',
+        };
+
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // Clear cart
+          localStorage.removeItem('mba_cart');
+          if (window.updateCartBadge) window.updateCartBadge();
+
+          // Redirect to order tracking
+          const orderId = data.order?.id || data.order?.order_number;
+          window.location.href = `/orders/${orderId}`;
+        } else {
+          if (errorEl) {
+            errorEl.textContent = data.error || 'Erreur lors de la validation de la commande.';
+            errorEl.classList.remove('hidden');
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirmer et Placer la Commande';
+        }
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = 'Erreur réseau lors du traitement de la commande.';
+          errorEl.classList.remove('hidden');
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirmer et Placer la Commande';
+      }
+    });
+  </script>
+</Layout>
