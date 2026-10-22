@@ -120,4 +120,64 @@ describe('Mission 13: Product Catalog & Stock Management API', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ message: 'Produit supprimé avec succès.' });
   });
+
+  it('GET /api/admin/export/products should return 9-column product json data for ADMIN', async () => {
+    (mockedPool.query as jest.Mock).mockResolvedValueOnce({
+      rows: [
+        {
+          id: 1,
+          titre: 'Smartphone Pro Max',
+          price: '999.99',
+          stock: 15,
+          image_link: 'http://example.com/phone.jpg',
+          slug: 'smartphone-pro-max',
+          description: 'High end smartphone',
+          created_at: '2026-01-01T00:00:00.000Z',
+          brand: 'TechStore Direct',
+        },
+      ],
+    });
+
+    const res = await request(app)
+      .get('/api/admin/export/products')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.products.length).toBe(1);
+    expect(res.body.products[0]).toHaveProperty('id', 1);
+    expect(res.body.products[0]).toHaveProperty('titre', 'Smartphone Pro Max');
+    expect(res.body.products[0]).toHaveProperty('price', 999.99);
+    expect(res.body.products[0]).toHaveProperty('availability', 'in stock');
+    expect(res.body.products[0]).toHaveProperty('image_link', 'http://example.com/phone.jpg');
+    expect(res.body.products[0]).toHaveProperty('link', '/products/smartphone-pro-max');
+    expect(res.body.products[0]).toHaveProperty('description', 'High end smartphone');
+    expect(res.body.products[0]).toHaveProperty('brand', 'TechStore Direct');
+    expect(res.body.products[0]).toHaveProperty('conditions');
+  });
+
+  it('GET /api/admin/export/products?format=csv should return 9-column CSV format', async () => {
+    (mockedPool.query as jest.Mock).mockResolvedValueOnce({
+      rows: [
+        {
+          id: 1,
+          titre: 'Casque Audio',
+          price: '199.99',
+          stock: 5,
+          image_link: 'http://example.com/casque.jpg',
+          slug: 'casque-audio',
+          description: 'Casque sans fil',
+          created_at: '2026-01-01T00:00:00.000Z',
+          brand: 'AudioStore',
+        },
+      ],
+    });
+
+    const res = await request(app)
+      .get('/api/admin/export/products?format=csv')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('id,titre,price,availability,image_link,link,description,brand,conditions');
+    expect(res.text).toContain('Casque Audio');
+  });
 });

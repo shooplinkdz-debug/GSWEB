@@ -30,6 +30,7 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
   const adminToken = jwt.sign({ id: 1, email: 'admin@webmanager.local', role: 'ADMIN' }, JWT_SECRET);
   const vendorToken = jwt.sign({ id: 2, email: 'vendor@techstore.local', role: 'VENDOR' }, JWT_SECRET);
   const customerToken = jwt.sign({ id: 3, email: 'customer@webmanager.local', role: 'CUSTOMER' }, JWT_SECRET);
+  const confirmateurToken = jwt.sign({ id: 4, email: 'confirmateur@webmanager.local', role: 'CONFIRMATEUR' }, JWT_SECRET);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -345,6 +346,57 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('Stock insuffisant');
       expect(mockClient.release).toHaveBeenCalled();
+    });
+  });
+
+  describe('Confirmateur Role Capabilities', () => {
+    it('should allow CONFIRMATEUR to view orders list via GET /api/orders', async () => {
+      const orders = [{ id: 1, order_number: 'CMD-CONF-1', status: 'PENDING' }];
+      (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: orders });
+
+      const res = await request(app)
+        .get('/api/orders')
+        .set('Authorization', `Bearer ${confirmateurToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(orders);
+    });
+
+    it('should allow CONFIRMATEUR to update customer info via PUT /api/orders/:id', async () => {
+      const currentOrder = { id: 1, customer_name: 'Old Name', shipping_address: 'Old Address', customer_phone: '0550000000' };
+      const updatedOrder = { id: 1, customer_name: 'New Name', shipping_address: 'New Address', customer_phone: '0660000000' };
+
+      (mockedPool.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [currentOrder] })
+        .mockResolvedValueOnce({ rows: [updatedOrder] });
+
+      const res = await request(app)
+        .put('/api/orders/1')
+        .set('Authorization', `Bearer ${confirmateurToken}`)
+        .send({ customer_name: 'New Name', shipping_address: 'New Address', customer_phone: '0660000000' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.customer_name).toBe('New Name');
+      expect(res.body.shipping_address).toBe('New Address');
+    });
+
+    it('should allow CONFIRMATEUR to update confirmation status to IN_PREPARATION', async () => {
+      const mockCurrentOrder = { id: 1, status: 'CONFIRMED' };
+      const mockUpdatedOrder = { id: 1, status: 'IN_PREPARATION' };
+
+      mockClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [mockCurrentOrder] }) // FOR UPDATE
+        .mockResolvedValueOnce({ rows: [mockUpdatedOrder] }) // UPDATE status
+        .mockResolvedValueOnce({}); // COMMIT
+
+      const res = await request(app)
+        .put('/api/orders/1/status')
+        .set('Authorization', `Bearer ${confirmateurToken}`)
+        .send({ status: 'IN_PREPARATION' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('IN_PREPARATION');
     });
   });
 

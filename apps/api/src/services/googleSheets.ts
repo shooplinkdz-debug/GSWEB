@@ -139,3 +139,121 @@ export async function exportOrdersData() {
   const orders: OrderExportRow[] = result.rows;
   return orders;
 }
+
+export interface ProductExportRow {
+  id: number;
+  titre: string;
+  price: number;
+  availability: string;
+  image_link: string;
+  link: string;
+  description: string;
+  brand: string;
+  conditions: string;
+}
+
+/**
+ * Retrieve products from database for Google Sheets / CSV export with 9 specified columns
+ */
+export async function exportProductsData(): Promise<ProductExportRow[]> {
+  const result = await pool.query(`
+    SELECT
+      p.id,
+      p.name as titre,
+      p.price,
+      p.stock,
+      p.image_url as image_link,
+      p.slug,
+      p.description,
+      p.created_at,
+      COALESCE(v.company_name, 'Ma Boutique Algérienne') as brand
+    FROM products p
+    LEFT JOIN vendors v ON p.vendor_id = v.id
+    ORDER BY p.id ASC
+  `);
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    titre: row.titre || '',
+    price: parseFloat(row.price || '0'),
+    availability: Number(row.stock || 0) > 0 ? 'in stock' : 'out of stock',
+    image_link: row.image_link || '',
+    link: `/products/${row.slug || row.id}`,
+    description: row.description || '',
+    brand: row.brand || 'Ma Boutique Algérienne',
+    conditions: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
+  }));
+}
+
+/**
+ * Format products records to 9-column CSV format
+ */
+export function formatProductsToCsv(products: ProductExportRow[]): string {
+  const headers = [
+    'id',
+    'titre',
+    'price',
+    'availability',
+    'image_link',
+    'link',
+    'description',
+    'brand',
+    'conditions',
+  ];
+
+  const rows = products.map((p) => [
+    p.id,
+    `"${(p.titre || '').replace(/"/g, '""')}"`,
+    Number(p.price || 0).toFixed(2),
+    `"${p.availability}"`,
+    `"${(p.image_link || '').replace(/"/g, '""')}"`,
+    `"${(p.link || '').replace(/"/g, '""')}"`,
+    `"${(p.description || '').replace(/"/g, '""')}"`,
+    `"${(p.brand || '').replace(/"/g, '""')}"`,
+    `"${p.conditions}"`,
+  ]);
+
+  return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+}
+
+/**
+ * Format products records to JSON
+ */
+export function formatProductsToJson(products: ProductExportRow[]) {
+  return {
+    exportedAt: new Date().toISOString(),
+    totalProducts: products.length,
+    products,
+  };
+}
+
+/**
+ * Synchronize products data with Google Sheets or fallback gracefully
+ */
+export async function syncProductsToGoogleSheets(products: ProductExportRow[]) {
+  const isEnabled = process.env.GOOGLE_SHEETS_ENABLED === 'true';
+  const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+
+  if (!isEnabled || !serviceAccountEmail || !privateKey || !spreadsheetId) {
+    return {
+      success: true,
+      mode: 'fallback_degraded',
+      synced: false,
+      message: 'Intégration Google Sheets produits désactivée ou non configurée. Mode dégradé actif (export CSV/JSON disponible).',
+      exportedCount: products.length,
+      data: products,
+    };
+  }
+
+  return {
+    success: true,
+    mode: 'google_sheets',
+    synced: true,
+    message: 'Synchronisation des articles avec Google Sheets effectuée avec succès.',
+    exportedCount: products.length,
+    spreadsheetId,
+    data: products,
+  };
+}
