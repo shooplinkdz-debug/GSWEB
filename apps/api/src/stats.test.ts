@@ -164,4 +164,95 @@ describe('Mission 15: Dashboard Stats & Admin API', () => {
       expect(res.body.items.length).toBe(1);
     });
   });
+
+  describe('Mission 18: Google Sheets Integration & Export API', () => {
+    const mockOrders = [
+      {
+        id: 1,
+        order_number: 'CMD-1001',
+        customer_name: 'Karim Ahmed',
+        customer_email: 'karim@example.dz',
+        customer_phone: '0550123456',
+        shipping_address: 'Algiers [16]',
+        shipping_fee: '600.00',
+        total_amount: '12600.00',
+        status: 'PAID',
+        payment_method: 'COD',
+        is_confirmed: true,
+        created_at: new Date().toISOString(),
+      },
+    ];
+
+    it('should export orders in JSON format via GET /api/admin/export/orders', async () => {
+      (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: mockOrders });
+
+      const res = await request(app)
+        .get('/api/admin/export/orders')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalOrders).toBe(1);
+      expect(res.body.orders[0].orderNumber).toBe('CMD-1001');
+      expect(res.body.orders[0].customerName).toBe('Karim Ahmed');
+    });
+
+    it('should export orders in CSV format via GET /api/admin/export/orders?format=csv', async () => {
+      (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: mockOrders });
+
+      const res = await request(app)
+        .get('/api/admin/export/orders?format=csv')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toContain('text/csv');
+      expect(res.text).toContain('Order ID,Order Number,Customer Name');
+      expect(res.text).toContain('"CMD-1001"');
+      expect(res.text).toContain('"Karim Ahmed"');
+    });
+
+    it('should handle Google Sheets export in degraded mode when unconfigured', async () => {
+      const origEnabled = process.env.GOOGLE_SHEETS_ENABLED;
+      delete process.env.GOOGLE_SHEETS_ENABLED;
+
+      (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: mockOrders });
+
+      const res = await request(app)
+        .post('/api/admin/export/google-sheets')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.mode).toBe('fallback_degraded');
+      expect(res.body.synced).toBe(false);
+      expect(res.body.exportedCount).toBe(1);
+
+      if (origEnabled) process.env.GOOGLE_SHEETS_ENABLED = origEnabled;
+    });
+
+    it('should perform Google Sheets sync when GOOGLE_SHEETS_ENABLED is true with credentials', async () => {
+      process.env.GOOGLE_SHEETS_ENABLED = 'true';
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = 'service-account@project.iam.gserviceaccount.com';
+      process.env.GOOGLE_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD\n-----END PRIVATE KEY-----\n';
+      process.env.GOOGLE_SPREADSHEET_ID = 'test_sheet_12345';
+
+      (mockedPool.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: mockOrders })
+        .mockResolvedValueOnce({ rows: [] }); // activity log insert mock if triggered
+
+      const res = await request(app)
+        .post('/api/admin/export/google-sheets')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.mode).toBe('google_sheets');
+      expect(res.body.synced).toBe(true);
+      expect(res.body.spreadsheetId).toBe('test_sheet_12345');
+
+      delete process.env.GOOGLE_SHEETS_ENABLED;
+      delete process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      delete process.env.GOOGLE_PRIVATE_KEY;
+      delete process.env.GOOGLE_SPREADSHEET_ID;
+    });
+  });
 });
