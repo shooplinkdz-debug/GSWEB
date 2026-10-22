@@ -8,7 +8,7 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
 ---
 
 <!DOCTYPE html>
-<html lang="fr" class="h-full">
+<html lang="fr" dir="ltr" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,8 +17,9 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
   </head>
   <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col antialiased">
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
-        <a href="/" class="flex items-center space-x-3">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        <!-- Logo -->
+        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
           <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center font-black text-xl text-slate-900 shadow">
             MBA
           </div>
@@ -28,26 +29,85 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
           </div>
         </a>
 
-        <nav class="flex items-center space-x-1 sm:space-x-4 text-sm font-medium">
-          <a href="/" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition">
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center space-x-1 lg:space-x-4 rtl:space-x-reverse text-sm font-medium">
+          <a href="/" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.home">
             Accueil
           </a>
-          <a href="/catalog" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition">
+          <a href="/catalog" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.catalog">
             Catalogue
           </a>
-          <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition">
+          <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.vendors">
             Boutiques
           </a>
-          <a href="/orders" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition">
+          <a href="/orders" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.tracking">
             Suivi
           </a>
-          <a href="/cart" class="relative flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl transition shadow">
-            <span>Panier</span>
+          <a href="/cart" class="relative flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl transition shadow focus:ring-2 focus:ring-emerald-400">
+            <span data-i18n="nav.cart">Panier</span>
             <span id="cart-badge" class="bg-white text-emerald-700 text-xs font-black rounded-full w-5 h-5 flex items-center justify-center hidden">
               0
             </span>
           </a>
         </nav>
+
+        <!-- Right Side: Language Switcher & Mobile Menu Toggle -->
+        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+          <!-- Language Switcher -->
+          <div class="flex items-center bg-slate-800 border border-slate-700 rounded-xl p-1 text-xs font-bold">
+            <button
+              id="lang-btn-fr"
+              onclick="setAppLanguage('fr')"
+              class="px-2.5 py-1 rounded-lg transition hover:text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              aria-label="Changer la langue en Français"
+            >
+              FR
+            </button>
+            <button
+              id="lang-btn-ar"
+              onclick="setAppLanguage('ar')"
+              class="px-2.5 py-1 rounded-lg transition hover:text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              aria-label="تغيير اللغة إلى العربية"
+            >
+              العربية
+            </button>
+          </div>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button
+            id="mobile-menu-btn"
+            type="button"
+            class="md:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 px-4 pt-2 pb-4 space-y-2 bg-slate-900">
+        <a href="/" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.home">
+          Accueil
+        </a>
+        <a href="/catalog" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.catalog">
+          Catalogue
+        </a>
+        <a href="/vendors" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.vendors">
+          Boutiques
+        </a>
+        <a href="/orders" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.tracking">
+          Suivi
+        </a>
+        <a href="/cart" class="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm">
+          <span data-i18n="nav.cart">Panier</span>
+          <span id="cart-badge-mobile" class="bg-white text-emerald-700 text-xs font-black rounded-full px-2 py-0.5">
+            0
+          </span>
+        </a>
       </div>
     </header>
 
@@ -59,42 +119,108 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
       <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <div>
           <h3 class="text-white font-bold text-base mb-3">MBA — Ma Boutique Algérienne</h3>
-          <p class="text-slate-400 text-xs leading-relaxed">
+          <p class="text-slate-400 text-xs leading-relaxed" data-i18n="footer.about">
             La première plateforme e-commerce multi-vendeurs dédiée au marché algérien.
             Livraison dans les 58 Wilayas et paiements sécurisés en Dinars Algériens (DZD).
           </p>
         </div>
         <div>
-          <h4 class="text-white font-semibold text-sm mb-3">Navigation rapide</h4>
+          <h4 class="text-white font-semibold text-sm mb-3" data-i18n="footer.quickNav">Navigation rapide</h4>
           <ul class="space-y-2 text-xs">
-            <li><a href="/" class="hover:text-emerald-400 transition">Accueil</a></li>
-            <li><a href="/catalog" class="hover:text-emerald-400 transition">Catalogue Produits</a></li>
-            <li><a href="/vendors" class="hover:text-emerald-400 transition">Boutiques Partenaires</a></li>
-            <li><a href="/orders" class="hover:text-emerald-400 transition">Suivre ma commande</a></li>
-            <li><a href="/cart" class="hover:text-emerald-400 transition">Mon Panier</a></li>
+            <li><a href="/" class="hover:text-emerald-400 transition" data-i18n="nav.home">Accueil</a></li>
+            <li><a href="/catalog" class="hover:text-emerald-400 transition" data-i18n="nav.catalog">Catalogue Produits</a></li>
+            <li><a href="/vendors" class="hover:text-emerald-400 transition" data-i18n="nav.vendors">Boutiques Partenaires</a></li>
+            <li><a href="/orders" class="hover:text-emerald-400 transition" data-i18n="nav.tracking">Suivre ma commande</a></li>
+            <li><a href="/cart" class="hover:text-emerald-400 transition" data-i18n="nav.cart">Mon Panier</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-semibold text-sm mb-3">Modes de Règlement</h4>
-          <p class="text-xs text-slate-400 leading-relaxed mb-2">
+          <h4 class="text-white font-semibold text-sm mb-3" data-i18n="footer.paymentMethods">Modes de Règlement</h4>
+          <p class="text-xs text-slate-400 leading-relaxed mb-2" data-i18n="reassurance.codDesc">
             Paiement à la livraison (Cash on Delivery) disponible dans toutes les wilayas.
           </p>
-          <div class="inline-block bg-slate-800 px-3 py-1.5 rounded-lg text-emerald-400 font-mono text-xs font-semibold">
+          <div class="inline-block bg-slate-800 px-3 py-1.5 rounded-lg text-emerald-400 font-mono text-xs font-semibold" data-i18n="reassurance.currency">
             Monnaie : Dinars Algériens (DZD)
           </div>
         </div>
       </div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
-        <p>&copy; {new Date().getFullYear()} MBA — Ma Boutique Algérienne. Tous droits réservés.</p>
+        <p>&copy; {new Date().getFullYear()} MBA — Ma Boutique Algérienne. <span data-i18n="common.allRightsReserved">Tous droits réservés.</span></p>
       </div>
     </footer>
 
-    <script id="cart-counter-script">
+    <script id="i18n-script">
+      const DICT = {
+        fr: {
+          'nav.home': 'Accueil',
+          'nav.catalog': 'Catalogue',
+          'nav.vendors': 'Boutiques',
+          'nav.tracking': 'Suivi',
+          'nav.cart': 'Panier',
+          'footer.about': 'La première plateforme e-commerce multi-vendeurs dédiée au marché algérien. Livraison dans les 58 Wilayas et paiements sécurisés en Dinars Algériens (DZD).',
+          'footer.quickNav': 'Navigation rapide',
+          'footer.paymentMethods': 'Modes de Règlement',
+          'reassurance.codDesc': 'Paiement à la livraison (Cash on Delivery) disponible dans toutes les wilayas.',
+          'reassurance.currency': 'Monnaie : Dinars Algériens (DZD)',
+          'common.allRightsReserved': 'Tous droits réservés.',
+        },
+        ar: {
+          'nav.home': 'الرئيسية',
+          'nav.catalog': 'الكتالوج',
+          'nav.vendors': 'المتاجر',
+          'nav.tracking': 'تتبع الطلب',
+          'nav.cart': 'السلة',
+          'footer.about': 'المنصة الأولى للتجارة الإلكترونية متعددة البائعين المخصصة للسوق الجزائرية. التوصيل لـ 58 ولاية والدفع عند الاستلام بالدينار الجزائري.',
+          'footer.quickNav': 'التنقل السريع',
+          'footer.paymentMethods': 'طرق الدفع',
+          'reassurance.codDesc': 'الدفع عند الاستلام متاح في جميع الولايات.',
+          'reassurance.currency': 'العملة : الدينار الجزائري (د.ج)',
+          'common.allRightsReserved': 'جميع الحقوق محفوظة.',
+        }
+      };
+
+      function setAppLanguage(lang) {
+        try {
+          localStorage.setItem('mba_lang', lang);
+          applyLanguage(lang);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function applyLanguage(lang) {
+        const root = document.documentElement;
+        if (lang === 'ar') {
+          root.setAttribute('dir', 'rtl');
+          root.setAttribute('lang', 'ar');
+          document.getElementById('lang-btn-ar')?.classList.add('bg-emerald-600', 'text-white');
+          document.getElementById('lang-btn-ar')?.classList.remove('text-slate-400');
+          document.getElementById('lang-btn-fr')?.classList.remove('bg-emerald-600', 'text-white');
+          document.getElementById('lang-btn-fr')?.classList.add('text-slate-400');
+        } else {
+          root.setAttribute('dir', 'ltr');
+          root.setAttribute('lang', 'fr');
+          document.getElementById('lang-btn-fr')?.classList.add('bg-emerald-600', 'text-white');
+          document.getElementById('lang-btn-fr')?.classList.remove('text-slate-400');
+          document.getElementById('lang-btn-ar')?.classList.remove('bg-emerald-600', 'text-white');
+          document.getElementById('lang-btn-ar')?.classList.add('text-slate-400');
+        }
+
+        const dict = DICT[lang] || DICT.fr;
+        document.querySelectorAll('[data-i18n]').forEach((el) => {
+          const key = el.getAttribute('data-i18n');
+          if (dict[key]) {
+            el.textContent = dict[key];
+          }
+        });
+      }
+
       function updateCartBadge() {
         try {
           const cart = JSON.parse(localStorage.getItem('mba_cart') || '[]');
           const count = cart.reduce((acc, item) => acc + (item.quantity || 1), 0);
           const badge = document.getElementById('cart-badge');
+          const badgeMobile = document.getElementById('cart-badge-mobile');
           if (badge) {
             if (count > 0) {
               badge.textContent = count;
@@ -103,13 +229,38 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
               badge.classList.add('hidden');
             }
           }
+          if (badgeMobile) {
+            badgeMobile.textContent = count;
+          }
         } catch (e) {
           console.error(e);
         }
       }
-      document.addEventListener('DOMContentLoaded', updateCartBadge);
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentLang = localStorage.getItem('mba_lang') || 'fr';
+        applyLanguage(currentLang);
+        updateCartBadge();
+
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileBtn && mobileMenu) {
+          mobileBtn.addEventListener('click', () => {
+            const isOpen = !mobileMenu.classList.contains('hidden');
+            if (isOpen) {
+              mobileMenu.classList.add('hidden');
+              mobileBtn.setAttribute('aria-expanded', 'false');
+            } else {
+              mobileMenu.classList.remove('hidden');
+              mobileBtn.setAttribute('aria-expanded', 'true');
+            }
+          });
+        }
+      });
+
       window.addEventListener('storage', updateCartBadge);
       window.updateCartBadge = updateCartBadge;
+      window.setAppLanguage = setAppLanguage;
     </script>
   </body>
 </html>

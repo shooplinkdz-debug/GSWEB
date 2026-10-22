@@ -109,6 +109,8 @@ export interface DeliveryRate {
   updated_at?: string | Date;
 }
 
+export * from './i18n.js';
+
 export const MONOREPO_INFO = {
   name: 'web-manager-monorepo',
   apps: ['apps/api', 'apps/web-astro', 'apps/admin-nuxt', 'apps/web-multivendor'],
