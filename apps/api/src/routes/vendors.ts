@@ -163,6 +163,60 @@ const vendorCommissionsHandler = async (req: AuthRequest, res: any) => {
 router.get('/me/commissions', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), vendorCommissionsHandler);
 router.get('/me/payouts', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), vendorCommissionsHandler);
 
+// GET /api/vendors/me/balance - Vendor balance management (Bénéfices - Dépenses = Solde)
+router.get('/me/balance', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  try {
+    const vendorRes = await pool.query(`SELECT * FROM vendors WHERE user_id = $1`, [req.user?.id]);
+    if (vendorRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil vendeur non trouvé.' });
+    }
+
+    const vendor = vendorRes.rows[0];
+
+    // Calculate gross sales & net payout from completed orders
+    const summaryRes = await pool.query(
+      `SELECT
+        COALESCE(SUM(oi.unit_price * oi.quantity), 0) as gross_sales,
+        COALESCE(SUM(oi.vendor_payout), 0) as sales_payout
+       FROM order_items oi
+       JOIN orders o ON oi.order_id = o.id
+       WHERE oi.vendor_id = $1 AND o.status != 'CANCELLED'`,
+      [vendor.id]
+    );
+
+    const summary = summaryRes.rows[0];
+    const grossSales = parseFloat(summary.gross_sales || '0');
+    const salesPayout = parseFloat(summary.sales_payout || '0');
+
+    // Manual or credit entries
+    const manualBenefits = parseFloat((req.query.manual_benefits as string) || '0');
+    const manualExpenses = parseFloat((req.query.manual_expenses as string) || '0');
+    const positiveCredit = parseFloat((req.query.validated_positive_credit as string) || '0');
+    const negativeCredit = parseFloat((req.query.validated_negative_credit as string) || '0');
+
+    const totalBenefits = salesPayout + manualBenefits + positiveCredit;
+    const totalExpenses = manualExpenses + negativeCredit;
+    const solde = totalBenefits - totalExpenses;
+
+    res.json({
+      vendorId: vendor.id,
+      companyName: vendor.company_name,
+      grossSales,
+      salesPayout,
+      manualBenefits,
+      manualExpenses,
+      validatedPositiveCredit: positiveCredit,
+      validatedNegativeCredit: negativeCredit,
+      totalBenefits,
+      totalExpenses,
+      solde,
+      calculationFormula: 'Solde = Total Bénéfices - Total Dépenses',
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors du calcul du solde vendeur.' });
+  }
+});
+
 // GET /api/vendors/me/stats - Current vendor statistics
 router.get('/me/stats', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   try {

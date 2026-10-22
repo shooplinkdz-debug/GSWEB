@@ -13,8 +13,8 @@ function optionalAuth(req: AuthRequest, res: Response, next: () => void) {
   next();
 }
 
-// GET /api/orders - Get all orders (Admin/Manager) or vendor specific
-router.get('/', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'VENDOR']), async (req: AuthRequest, res: Response) => {
+// GET /api/orders - Get all orders (Admin/Manager/Confirmateur) or vendor specific
+router.get('/', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'VENDOR', 'CONFIRMATEUR']), async (req: AuthRequest, res: Response) => {
   try {
     if (req.user?.role === 'VENDOR') {
       const vendorRes = await pool.query(`SELECT id FROM vendors WHERE user_id = $1`, [req.user.id]);
@@ -136,10 +136,40 @@ const confirmPhoneHandler = async (req: AuthRequest, res: Response) => {
 router.put('/:id/confirm-phone', optionalAuth, confirmPhoneHandler);
 router.put('/:id/confirm', optionalAuth, confirmPhoneHandler);
 
-// PUT /api/orders/:id/status (Admin/Manager/Vendor)
-router.put('/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'VENDOR']), async (req: AuthRequest, res: Response) => {
+// PUT /api/orders/:id - Edit order customer info (Confirmateur / Admin / Manager)
+router.put('/:id', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'CONFIRMATEUR']), async (req: AuthRequest, res: Response) => {
+  const { customer_name, shipping_address, customer_phone, phone } = req.body;
+  const phoneNum = customer_phone || phone;
+  const orderId = req.params.id;
+
+  try {
+    const checkRes = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+    if (checkRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Commande introuvable.' });
+    }
+
+    const current = checkRes.rows[0];
+    const updateRes = await pool.query(
+      `UPDATE orders
+       SET customer_name = COALESCE($1, customer_name),
+           shipping_address = COALESCE($2, shipping_address),
+           customer_phone = COALESCE($3, customer_phone),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $4
+       RETURNING *`,
+      [customer_name ?? null, shipping_address ?? null, phoneNum ?? null, current.id]
+    );
+
+    res.json(updateRes.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la modification de la commande.' });
+  }
+});
+
+// PUT /api/orders/:id/status (Admin/Manager/Vendor/Confirmateur)
+router.put('/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'VENDOR', 'CONFIRMATEUR']), async (req: AuthRequest, res: Response) => {
   const { status } = req.body;
-  const validStatuses = ['PENDING', 'CONFIRMED', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+  const validStatuses = ['PENDING', 'CONFIRMED', 'IN_PREPARATION', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'UNCONFIRMED', 'RETURNED'];
   if (!status || !validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Statut de commande invalide.' });
   }

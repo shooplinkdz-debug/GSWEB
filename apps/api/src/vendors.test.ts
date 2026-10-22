@@ -204,4 +204,21 @@ describe('Multi-Vendor API Integration Tests', () => {
     expect(res.status).toBe(200);
     expect(res.body.length).toBe(2);
   });
+
+  it('GET /api/vendors/me/balance calculates vendor balance (bénéfices - dépenses = solde)', async () => {
+    (mockedPool.query as jest.Mock)
+      .mockResolvedValueOnce({ rows: [{ id: 1, company_name: 'TechStore Direct' }] }) // Vendor lookup
+      .mockResolvedValueOnce({ rows: [{ gross_sales: '10000.00', sales_payout: '9000.00' }] }); // Sales summary
+
+    const res = await request(app)
+      .get('/api/vendors/me/balance?manual_benefits=500&manual_expenses=200&validated_positive_credit=100&validated_negative_credit=50')
+      .set('Authorization', `Bearer ${vendorToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('solde');
+    expect(res.body.salesPayout).toBe(9000);
+    expect(res.body.totalBenefits).toBe(9600); // 9000 + 500 + 100 = 9600
+    expect(res.body.totalExpenses).toBe(250); // 200 + 50 = 250
+    expect(res.body.solde).toBe(9350); // 9600 - 250 = 9350
+  });
 });

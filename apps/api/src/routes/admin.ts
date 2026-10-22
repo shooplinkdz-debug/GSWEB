@@ -2,7 +2,16 @@ import { Router } from 'express';
 import pool from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { logActivity } from '../services/logger';
-import { exportOrdersData, formatOrdersToCsv, formatOrdersToJson, syncOrdersToGoogleSheets } from '../services/googleSheets';
+import {
+  exportOrdersData,
+  formatOrdersToCsv,
+  formatOrdersToJson,
+  syncOrdersToGoogleSheets,
+  exportProductsData,
+  formatProductsToCsv,
+  formatProductsToJson,
+  syncProductsToGoogleSheets,
+} from '../services/googleSheets';
 
 const router = Router();
 
@@ -334,6 +343,43 @@ router.post('/export/google-sheets', authenticateToken, requireRole(['ADMIN', 'M
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Erreur lors de la synchronisation avec Google Sheets.' });
+  }
+});
+
+// GET /api/admin/export/products - Export articles/products in 9-column CSV, JSON, or Google Sheets format
+router.get('/export/products', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  try {
+    const format = ((req.query.format as string) || 'json').toLowerCase();
+    const products = await exportProductsData();
+
+    if (format === 'csv') {
+      const csv = formatProductsToCsv(products);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="products-export.csv"');
+      return res.status(200).send(csv);
+    }
+
+    if (format === 'sheets') {
+      const syncResult = await syncProductsToGoogleSheets(products);
+      return res.json(syncResult);
+    }
+
+    const jsonData = formatProductsToJson(products);
+    res.json(jsonData);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de l’exportation des articles.' });
+  }
+});
+
+// POST /api/admin/export/products/google-sheets - Trigger Google Sheets synchronization for products
+router.post('/export/products/google-sheets', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  try {
+    const products = await exportProductsData();
+    const result = await syncProductsToGoogleSheets(products);
+    await logActivity(req.user?.id, 'GOOGLE_SHEETS_PRODUCTS_SYNC', { mode: result.mode, synced: result.synced, count: result.exportedCount }, req.ip);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la synchronisation des articles avec Google Sheets.' });
   }
 });
 
