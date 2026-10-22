@@ -2,6 +2,7 @@ import { Router } from 'express';
 import pool from '../db';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { logActivity } from '../services/logger';
+import { exportOrdersData, formatOrdersToCsv, formatOrdersToJson, syncOrdersToGoogleSheets } from '../services/googleSheets';
 
 const router = Router();
 
@@ -298,5 +299,42 @@ const aiAssistantHandler = async (req: AuthRequest, res: any) => {
 
 router.post('/ai/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']), aiAssistantHandler);
 router.post('/assistant', authenticateToken, requireRole(['ADMIN', 'MANAGER']), aiAssistantHandler);
+
+// GET /api/admin/export/orders - Export orders in CSV, JSON, or Google Sheets format
+router.get('/export/orders', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  try {
+    const format = ((req.query.format as string) || 'json').toLowerCase();
+    const orders = await exportOrdersData();
+
+    if (format === 'csv') {
+      const csv = formatOrdersToCsv(orders);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv"');
+      return res.status(200).send(csv);
+    }
+
+    if (format === 'sheets') {
+      const syncResult = await syncOrdersToGoogleSheets(orders);
+      return res.json(syncResult);
+    }
+
+    const jsonData = formatOrdersToJson(orders);
+    res.json(jsonData);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de l’exportation des commandes.' });
+  }
+});
+
+// POST /api/admin/export/google-sheets - Trigger Google Sheets synchronization
+router.post('/export/google-sheets', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  try {
+    const orders = await exportOrdersData();
+    const result = await syncOrdersToGoogleSheets(orders);
+    await logActivity(req.user?.id, 'GOOGLE_SHEETS_SYNC', { mode: result.mode, synced: result.synced, count: result.exportedCount }, req.ip);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la synchronisation avec Google Sheets.' });
+  }
+});
 
 export default router;

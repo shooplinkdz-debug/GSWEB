@@ -118,6 +118,31 @@ L'API backend est exposée par défaut sur le port `4000`. Les routes nécessita
 | **GET** | `/api/admin/backup` | `ADMIN` | Export et téléchargement de la sauvegarde de la base de données SQL |
 | **POST** | `/api/admin/restore` | `ADMIN` | Restauration de la base de données depuis un fichier d'export |
 | **POST** | `/api/admin/ai/assistant` | `ADMIN`, `MANAGER` | Assistant IA pour génération de contenu et analyse |
+| **GET** | `/api/admin/export/orders` | `ADMIN`, `MANAGER` | Exportation des rapports de commandes (formats `json`, `csv`, `sheets`) |
+| **POST** | `/api/admin/export/google-sheets` | `ADMIN`, `MANAGER` | Synchronisation manuelle des commandes avec Google Sheets |
+
+---
+
+## Intégration Google Sheets & Service Account
+
+L'application prend en charge une intégration optionnelle avec **Google Sheets** pour la synchronisation administrative et l'export des commandes :
+
+### Configuration du Service Account Google
+1. Accédez à la [Google Cloud Console](https://console.cloud.google.com/) et créez ou sélectionnez un projet.
+2. Activez l'API **Google Sheets API** dans la section *APIs & Services*.
+3. Créez un **Service Account** sous *Credentials -> Create Credentials -> Service Account*.
+4. Générez et téléchargez une clé privée JSON pour ce Service Account.
+5. Dans votre feuille Google Sheets, partagez le document avec l'adresse email du Service Account en mode Éditeur.
+6. Renseignez les variables suivantes dans votre fichier `.env` :
+   ```env
+   GOOGLE_SHEETS_ENABLED=true
+   GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project.iam.gserviceaccount.com
+   GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+   GOOGLE_SPREADSHEET_ID=your_spreadsheet_id
+   ```
+
+### Mode Dégradé
+Si `GOOGLE_SHEETS_ENABLED=false` ou si les identifiants ne sont pas configurés, l'application bascule automatiquement en **mode dégradé sans crash**. L'export reste pleinement disponible au format CSV/JSON.
 
 ---
 
