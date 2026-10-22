@@ -234,15 +234,61 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
       expect(res.body.error).toContain('Échec de la carte bancaire de test');
     });
 
+    it('should create COD order successfully with customer phone and platform commission calculation', async () => {
+      const mockProduct1 = { id: 1, name: 'Prod A', price: '10000.00', stock: 10, vendor_id: 1, vendor_commission_rate: '10.00' };
+      const mockDeliveryRate = { wilaya_code: 16, home_fee: '400.00', desk_fee: '250.00' };
+      const mockCreatedOrder = {
+        id: 15,
+        order_number: 'CMD-COD-1',
+        customer_phone: '0550123456',
+        shipping_fee: 400,
+        total_amount: 10400,
+        commission_amount: 1000,
+        vendor_payout: 9000,
+        status: 'PENDING',
+        payment_method: 'COD',
+        is_confirmed: false,
+      };
+
+      mockClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [mockProduct1] }) // SELECT product 1 FOR UPDATE
+        .mockResolvedValueOnce({}) // UPDATE stock 1
+        .mockResolvedValueOnce({ rows: [mockDeliveryRate] }) // SELECT delivery rate
+        .mockResolvedValueOnce({ rows: [mockCreatedOrder] }) // INSERT order
+        .mockResolvedValueOnce({}) // INSERT order_item 1
+        .mockResolvedValueOnce({}); // COMMIT
+
+      const res = await request(app)
+        .post('/api/orders')
+        .send({
+          customer_name: 'Karim Algérois',
+          customer_email: 'karim@example.dz',
+          customer_phone: '0550123456',
+          shipping_address: '[16 - Alger] Rue Didouche',
+          items: [{ product_id: 1, quantity: 1 }],
+          payment_method: 'COD',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.message).toContain('Paiement à la livraison');
+      expect(res.body.order.payment_method).toBe('COD');
+      expect(res.body.order.commission_amount).toBe(1000);
+      expect(res.body.order.vendor_payout).toBe(9000);
+      expect(mockClient.release).toHaveBeenCalled();
+    });
+
     it('should create multi-vendor order successfully with delivery fee calculation', async () => {
-      const mockProduct1 = { id: 1, name: 'Prod A', price: '1000.00', stock: 10, vendor_id: 1 };
-      const mockProduct2 = { id: 2, name: 'Prod B', price: '2000.00', stock: 5, vendor_id: 2 };
+      const mockProduct1 = { id: 1, name: 'Prod A', price: '1000.00', stock: 10, vendor_id: 1, vendor_commission_rate: '10.00' };
+      const mockProduct2 = { id: 2, name: 'Prod B', price: '2000.00', stock: 5, vendor_id: 2, vendor_commission_rate: '15.00' };
       const mockDeliveryRate = { wilaya_code: 16, home_fee: '400.00', desk_fee: '250.00' };
       const mockCreatedOrder = {
         id: 10,
         order_number: 'CMD-12345',
         shipping_fee: 400,
         total_amount: 3400,
+        commission_amount: 400, // (1000*0.1) + (2000*0.15) = 100 + 300 = 400
+        vendor_payout: 2600, // 900 + 1700 = 2600
         status: 'PAID',
         payment_method: 'TEST_CARD',
       };
@@ -302,13 +348,32 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
     });
   });
 
-  describe('Mission MBA 11 Verification', () => {
-    it('should verify Mission 11 is marked as Terminée in INDEX.md', () => {
+  describe('Phone / SMS Order Confirmation API', () => {
+    it('should confirm COD order via PUT /api/orders/:id/confirm-phone', async () => {
+      const mockPendingOrder = { id: 20, status: 'PENDING', is_confirmed: false };
+      const mockConfirmedOrder = { id: 20, status: 'CONFIRMED', is_confirmed: true };
+
+      (mockedPool.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [mockPendingOrder] })
+        .mockResolvedValueOnce({ rows: [mockConfirmedOrder] });
+
+      const res = await request(app).put('/api/orders/20/confirm-phone');
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toContain('confirmée par téléphone');
+      expect(res.body.order.status).toBe('CONFIRMED');
+      expect(res.body.order.is_confirmed).toBe(true);
+    });
+  });
+
+  describe('Mission MBA Verification', () => {
+    it('should verify Mission 11 & Mission 13 are marked as Terminée in INDEX.md', () => {
       const rootDir = path.resolve(__dirname, '../../..');
       const indexPath = path.join(rootDir, 'missionMBA/INDEX.md');
       const content = fs.readFileSync(indexPath, 'utf-8');
 
       expect(content).toMatch(/\|\s*\*\*11\*\*\s*\|\s*Panier & Commandes Multi-Boutiques\s*\|.*\|\s*Terminée\s*\|/);
+      expect(content).toMatch(/\|\s*\*\*13\*\*\s*\|.*Paiements \(COD\) & Commissions Vendeurs.*\|\s*Terminée\s*\|/);
     });
   });
 });
