@@ -3,74 +3,82 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Mon Panier">
-  <div class="max-w-4xl mx-auto">
-    <div class="mb-8">
-      <h1 class="text-3xl font-black text-slate-900 mb-2">Votre Panier d'Achats</h1>
-      <p class="text-slate-600 text-sm">Vérifiez les articles sélectionnés avant de finaliser votre commande.</p>
+  <div class="max-w-5xl mx-auto py-6">
+    <div class="mb-6">
+      <h1 class="text-2xl font-black text-slate-900 mb-1 flex items-center gap-2">
+        <span>🛒</span>
+        <span>Votre Panier d'Achats</span>
+      </h1>
+      <p class="text-slate-500 text-xs">Vérifiez vos articles, ajustez les quantités et procédez à la commande sécurisée.</p>
     </div>
 
     <!-- Empty State -->
-    <div id="empty-cart-view" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-      <div class="text-5xl mb-4">🛒</div>
-      <h2 class="text-xl font-bold text-slate-800 mb-2">Votre panier est vide</h2>
-      <p class="text-slate-500 text-sm mb-6">Explorez notre catalogue pour ajouter des articles.</p>
-      <a href="/catalog" class="inline-block bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition shadow">
+    <div id="empty-cart-view" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center text-3xl">
+        🛒
+      </div>
+      <h2 class="text-lg font-bold text-slate-800 mb-1">Votre panier est actuellement vide</h2>
+      <p class="text-slate-500 text-xs mb-6 max-w-sm mx-auto">Découvrez des milliers de produits certifiés auprès de nos boutiques algériennes.</p>
+      <a href="/catalog" class="inline-block bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-xs">
         Explorer le catalogue
       </a>
     </div>
 
     <!-- Cart Items View -->
-    <div id="cart-content-view" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div id="cart-content-view" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Items List -->
       <div class="lg:col-span-2 space-y-4" id="cart-items-container">
         <!-- JS populated -->
       </div>
 
       <!-- Summary Card -->
-      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-fit space-y-6">
-        <h2 class="text-xl font-black text-slate-900 border-b border-slate-100 pb-4">Résumé de commande</h2>
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs h-fit space-y-5">
+        <h2 class="text-base font-black text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+          <span>📋</span>
+          <span>Récapitulatif Commande</span>
+        </h2>
 
-        <div class="space-y-3 text-sm">
+        <div class="space-y-3 text-xs">
           <div class="flex justify-between text-slate-600">
             <span>Sous-total articles :</span>
-            <span id="summary-subtotal" class="font-bold text-slate-900">0 DZD</span>
+            <span id="summary-subtotal" class="font-bold text-slate-900">0 DA</span>
           </div>
           <div class="flex justify-between text-slate-600">
             <span>Frais de livraison estimés :</span>
-            <span class="text-emerald-600 font-bold">Calculés au paiement</span>
+            <span class="text-emerald-800 font-bold">Selon wilaya</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>Mode de paiement :</span>
+            <span class="text-amber-700 font-bold">Espèces à la livraison</span>
           </div>
         </div>
 
-        <div class="border-t border-slate-200 pt-4 flex justify-between items-baseline">
-          <span class="text-lg font-black text-slate-900">Total :</span>
-          <span id="summary-total" class="text-2xl font-black text-emerald-600">0 DZD</span>
+        <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
+          <span class="text-sm font-black text-slate-900">Montant Total :</span>
+          <span id="summary-total" class="text-2xl font-black text-emerald-900">0 DA</span>
         </div>
 
         <a
           href="/checkout"
-          class="block text-center w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl transition shadow text-base"
+          class="block text-center w-full bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3.5 rounded-xl transition shadow-xs text-xs"
         >
-          Valider et Commander &rarr;
+          Valider la commande &rarr;
         </a>
 
-        <a
-          href="/catalog"
-          class="block text-center w-full text-slate-600 hover:text-slate-900 text-xs font-semibold"
-        >
-          &larr; Continuer mes achats
-        </a>
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60 text-[11px] text-emerald-800 text-center font-semibold">
+          🇩🇿 Livraison garantie dans les 58 Wilayas
+        </div>
       </div>
     </div>
   </div>
 
-  <script id="cart-page-script">
+  <script is:inline>
     function formatDZDJs(amount) {
       const numeric = typeof amount === 'string' ? parseFloat(amount) : amount;
-      if (isNaN(numeric)) return '0 DZD';
+      if (isNaN(numeric)) return '0 DA';
       return new Intl.NumberFormat('fr-DZ', {
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 0,
-      }).format(numeric) + ' DZD';
+        maximumFractionDigits: 0,
+      }).format(numeric) + ' DA';
     }
 
     function renderCart() {
@@ -99,28 +107,29 @@ import Layout from '../layouts/Layout.astro';
           total += itemTotal;
 
           const itemEl = document.createElement('div');
-          itemEl.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-4 justify-between';
+          itemEl.className = 'bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center gap-4 justify-between';
 
           itemEl.innerHTML = `
             <div class="flex items-center gap-4 w-full sm:w-auto">
-              <img src="${item.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}" alt="${item.name}" class="w-16 h-16 object-cover rounded-xl bg-slate-100" />
+              <img src="${item.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}" alt="${item.name}" class="w-16 h-16 object-contain rounded-xl bg-slate-50 border p-1" />
               <div>
-                <a href="/products/${item.slug}" class="font-bold text-slate-900 hover:text-emerald-600 transition block text-base">${item.name}</a>
-                <span class="text-emerald-600 font-extrabold text-sm">${formatDZDJs(item.price)} u.</span>
+                <a href="/products/${item.slug}" class="font-bold text-slate-900 hover:text-emerald-800 transition block text-xs leading-snug">${item.name}</a>
+                <span class="text-xs text-slate-400 block mt-0.5">Vendeur: ${item.vendor_name || 'Boutique certifiée'}</span>
+                <span class="text-emerald-900 font-extrabold text-xs block mt-1">${formatDZDJs(item.price)}</span>
               </div>
             </div>
 
-            <div class="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+            <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
               <div class="flex items-center border border-slate-300 rounded-xl bg-slate-50 overflow-hidden">
-                <button onclick="changeQty(${index}, -1)" class="px-3 py-1 font-bold text-slate-600 hover:bg-slate-200">-</button>
-                <span class="px-3 text-sm font-bold">${item.quantity}</span>
-                <button onclick="changeQty(${index}, 1)" class="px-3 py-1 font-bold text-slate-600 hover:bg-slate-200">+</button>
+                <button onclick="changeQty(${index}, -1)" class="px-2.5 py-1 font-bold text-slate-600 hover:bg-slate-200 text-xs">-</button>
+                <span class="px-3 text-xs font-bold">${item.quantity}</span>
+                <button onclick="changeQty(${index}, 1)" class="px-2.5 py-1 font-bold text-slate-600 hover:bg-slate-200 text-xs">+</button>
               </div>
 
-              <span class="font-black text-slate-900 text-base">${formatDZDJs(itemTotal)}</span>
+              <span class="font-black text-slate-900 text-sm">${formatDZDJs(itemTotal)}</span>
 
-              <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700 p-1 font-bold text-xs">
-                🗑️
+              <button onclick="removeItem(${index})" class="text-slate-400 hover:text-red-600 p-1 font-bold text-xs" title="Supprimer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               </button>
             </div>
           `;
@@ -141,7 +150,7 @@ import Layout from '../layouts/Layout.astro';
           cart.splice(index, 1);
         }
         localStorage.setItem('mba_cart', JSON.stringify(cart));
-        if (window.updateCartBadge) window.updateCartBadge();
+        if (window.updateBadges) window.updateBadges();
         renderCart();
       }
     }
@@ -151,7 +160,7 @@ import Layout from '../layouts/Layout.astro';
       if (cart[index]) {
         cart.splice(index, 1);
         localStorage.setItem('mba_cart', JSON.stringify(cart));
-        if (window.updateCartBadge) window.updateCartBadge();
+        if (window.updateBadges) window.updateBadges();
         renderCart();
       }
     }

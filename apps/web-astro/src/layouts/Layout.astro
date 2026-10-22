@@ -4,178 +4,311 @@ interface Props {
   description?: string;
 }
 
-const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Découvrez les meilleurs produits et boutiques en Algérie avec livraison 58 wilayas et paiement en DZD." } = Astro.props;
+const { title, description = "MBA — Ma Boutique Algérienne. Marketplace 100% Algérie. Achetez local, vivez mieux." } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="fr" dir="ltr" class="h-full">
+<html lang="fr" dir="ltr" class="h-full scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <title>{title} — MBA Marketplace Algérie</title>
+    <title>{title} | MBA — Ma Boutique Algérienne</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      }
+      [dir="rtl"] body {
+        font-family: 'Noto Kufi Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+      }
+    </style>
   </head>
-  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col antialiased">
-    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-        <!-- Logo -->
-        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center font-black text-xl text-slate-900 shadow">
-            MBA
+  <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Info Bar -->
+    <div class="bg-emerald-950 text-emerald-100 text-xs py-1.5 border-b border-emerald-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <span class="inline-flex items-center gap-1 font-semibold text-amber-400">
+            🇩🇿 Marketplace N°1 en Algérie
+          </span>
+          <span class="hidden md:inline text-emerald-300">•</span>
+          <span class="hidden md:inline text-emerald-200">Livraison garantie dans les 58 Wilayas & Paiement à la livraison</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/vendors" class="hover:text-amber-300 transition font-medium" data-i18n="topbar.sellOnMba">Vendre sur MBA</a>
+          <span>|</span>
+          <a href="/faq" class="hover:text-emerald-200 transition font-medium" data-i18n="topbar.help">Aide & Support</a>
+          <span>|</span>
+          <div class="inline-flex items-center gap-1 font-bold">
+            <button id="top-lang-fr" onclick="setAppLanguage('fr')" class="hover:text-amber-300 px-1 text-amber-400">Français</button>
+            <span class="text-emerald-500">|</span>
+            <button id="top-lang-ar" onclick="setAppLanguage('ar')" class="hover:text-amber-300 px-1 text-emerald-200">العربية</button>
           </div>
-          <div>
-            <span class="text-xl font-bold tracking-tight text-white block">Ma Boutique Algérienne</span>
-            <span class="text-xs text-emerald-400 block font-medium">Marketplace 100% Algérie (DZD)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sm:gap-6">
+
+        <!-- MBA Brand Logo -->
+        <a href="/" class="flex items-center gap-3 shrink-0 group">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 flex items-center justify-center text-white font-black text-xl shadow-md border border-amber-400/40 group-hover:scale-105 transition-transform">
+            <span class="text-amber-400 tracking-tighter">M</span><span class="text-white">B</span><span class="text-amber-400 tracking-tighter">A</span>
+          </div>
+          <div class="hidden sm:block">
+            <span class="text-xl font-extrabold text-emerald-950 tracking-tight block leading-tight">MBA</span>
+            <span class="text-xs font-semibold text-slate-500 block -mt-0.5">Ma Boutique Algérienne</span>
+            <span class="text-[10px] text-emerald-700 font-bold block">Achetez local, vivez mieux</span>
           </div>
         </a>
 
-        <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center space-x-1 lg:space-x-4 rtl:space-x-reverse text-sm font-medium">
-          <a href="/" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.home">
-            Accueil
+        <!-- Search Bar with Live Suggestions & Wilaya Selector -->
+        <div class="flex-1 max-w-2xl relative">
+          <form action="/catalog" method="GET" class="flex items-center bg-slate-100 rounded-xl border border-slate-300 overflow-hidden focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
+            <div class="relative hidden lg:flex items-center pl-3 pr-2 border-r border-slate-300 text-xs font-semibold text-slate-600 bg-slate-50 shrink-0">
+              <svg class="w-4 h-4 text-emerald-700 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <select id="wilaya-selector" class="bg-transparent py-2.5 outline-none cursor-pointer text-slate-700 font-bold text-xs" onchange="changeActiveWilaya(this.value)">
+                <option value="Blida">Livrer à Blida</option>
+                <option value="Alger">Livrer à Alger</option>
+                <option value="Oran">Livrer à Oran</option>
+                <option value="Constantine">Livrer à Constantine</option>
+                <option value="Annaba">Livrer à Annaba</option>
+                <option value="Setif">Livrer à Sétif</option>
+                <option value="Tlemcen">Livrer à Tlemcen</option>
+                <option value="Biskra">Livrer à Biskra</option>
+                <option value="Ouargla">Livrer à Ouargla</option>
+                <option value="Tizi Ouzou">Livrer à Tizi Ouzou</option>
+                <option value="Bejaia">Livrer à Béjaïa</option>
+                <option value="Mostaganem">Livrer à Mostaganem</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              id="search-input"
+              name="q"
+              placeholder="Rechercher un produit, une boutique..."
+              class="w-full bg-transparent px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none"
+              autocomplete="off"
+            />
+            <button type="submit" class="bg-emerald-800 hover:bg-emerald-900 text-white px-5 py-2.5 transition flex items-center justify-center font-bold text-sm shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </button>
+          </form>
+          <!-- Suggestions Dropdown -->
+          <div id="search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden text-sm">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Action Icons: Account, Wishlist, Cart -->
+        <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+
+          <!-- User Account -->
+          <a href="/account" class="flex items-center gap-2 hover:text-emerald-700 text-slate-700 transition group p-1.5 rounded-xl hover:bg-slate-100">
+            <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-emerald-50 flex items-center justify-center text-slate-600 group-hover:text-emerald-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <div class="hidden xl:block text-left">
+              <span id="user-greeting" class="text-xs font-bold text-slate-800 block leading-tight" data-i18n="header.myAccount">Mon compte</span>
+              <span id="user-subtext" class="text-[10px] text-slate-500 block" data-i18n="header.loginRegister">Connexion / Inscription</span>
+            </div>
           </a>
-          <a href="/catalog" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.catalog">
-            Catalogue
-          </a>
-          <a href="/vendors" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.vendors">
-            Boutiques
-          </a>
-          <a href="/orders" class="px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white transition" data-i18n="nav.tracking">
-            Suivi
-          </a>
-          <a href="/cart" class="relative flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl transition shadow focus:ring-2 focus:ring-emerald-400">
-            <span data-i18n="nav.cart">Panier</span>
-            <span id="cart-badge" class="bg-white text-emerald-700 text-xs font-black rounded-full w-5 h-5 flex items-center justify-center hidden">
+
+          <!-- Wishlist -->
+          <a href="/wishlist" class="relative p-2 text-slate-700 hover:text-emerald-700 hover:bg-slate-100 rounded-xl transition" title="Mes favoris">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <span id="wishlist-badge" class="absolute -top-1 -right-1 bg-amber-500 text-slate-950 font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center hidden">
               0
             </span>
           </a>
-        </nav>
 
-        <!-- Right Side: Language Switcher & Mobile Menu Toggle -->
-        <div class="flex items-center space-x-2 rtl:space-x-reverse">
-          <!-- Language Switcher -->
-          <div class="flex items-center bg-slate-800 border border-slate-700 rounded-xl p-1 text-xs font-bold">
-            <button
-              id="lang-btn-fr"
-              onclick="setAppLanguage('fr')"
-              class="px-2.5 py-1 rounded-lg transition hover:text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
-              aria-label="Changer la langue en Français"
-            >
-              FR
-            </button>
-            <button
-              id="lang-btn-ar"
-              onclick="setAppLanguage('ar')"
-              class="px-2.5 py-1 rounded-lg transition hover:text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
-              aria-label="تغيير اللغة إلى العربية"
-            >
-              العربية
-            </button>
+          <!-- Cart -->
+          <a href="/cart" class="relative flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl transition font-bold text-xs shadow-sm">
+            <div class="relative">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            </div>
+            <span class="hidden sm:inline" data-i18n="header.cart">Panier</span>
+            <span id="cart-badge" class="bg-amber-400 text-emerald-950 font-black text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+              0
+            </span>
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- Main Navigation Menu (Categories) -->
+      <nav class="bg-emerald-900 text-white text-xs font-semibold shadow-inner border-t border-emerald-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between overflow-x-auto py-2 scrollbar-none gap-2">
+
+          <a href="/catalog" class="flex items-center gap-2 bg-emerald-950 hover:bg-emerald-800 text-amber-300 font-bold px-3 py-1.5 rounded-lg shrink-0 transition border border-amber-400/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span data-i18n="menu.allCategories">Toutes les catégories</span>
+          </a>
+
+          <div class="flex items-center gap-1 shrink-0">
+            <a href="/catalog?category=electronique" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>💻</span> <span data-i18n="cat.electronics">Électronique</span>
+            </a>
+            <a href="/catalog?category=maison" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>🏠</span> <span data-i18n="cat.home">Maison</span>
+            </a>
+            <a href="/catalog?category=mode" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>👕</span> <span data-i18n="cat.fashion">Mode</span>
+            </a>
+            <a href="/catalog?category=beaute" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>💄</span> <span data-i18n="cat.beauty">Beauté</span>
+            </a>
+            <a href="/catalog?category=auto-moto" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>🚗</span> <span data-i18n="cat.auto">Auto & Moto</span>
+            </a>
+            <a href="/catalog?category=jardin" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>🌿</span> <span data-i18n="cat.garden">Jardin</span>
+            </a>
+            <a href="/catalog?category=sport" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>🏋️</span> <span data-i18n="cat.sport">Sport</span>
+            </a>
+            <a href="/catalog?category=enfants" class="px-3 py-1.5 rounded-lg hover:bg-emerald-800/80 transition flex items-center gap-1.5 text-emerald-100 hover:text-white">
+              <span>🧸</span> <span data-i18n="cat.kids">Enfants</span>
+            </a>
           </div>
 
-          <!-- Mobile Hamburger Toggle -->
-          <button
-            id="mobile-menu-btn"
-            type="button"
-            class="md:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            aria-label="Toggle navigation menu"
-            aria-expanded="false"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
+          <a href="/catalog?offers=true" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-3 py-1.5 rounded-lg shrink-0 transition flex items-center gap-1 shadow-sm">
+            <span>🏷️</span> <span data-i18n="menu.offers">Offres & Promos</span>
+          </a>
 
-      <!-- Mobile Navigation Drawer -->
-      <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 px-4 pt-2 pb-4 space-y-2 bg-slate-900">
-        <a href="/" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.home">
-          Accueil
-        </a>
-        <a href="/catalog" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.catalog">
-          Catalogue
-        </a>
-        <a href="/vendors" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.vendors">
-          Boutiques
-        </a>
-        <a href="/orders" class="block px-3 py-2 rounded-lg text-slate-200 hover:bg-slate-800 hover:text-white font-medium text-sm" data-i18n="nav.tracking">
-          Suivi
-        </a>
-        <a href="/cart" class="flex items-center justify-between px-3 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm">
-          <span data-i18n="nav.cart">Panier</span>
-          <span id="cart-badge-mobile" class="bg-white text-emerald-700 text-xs font-black rounded-full px-2 py-0.5">
-            0
-          </span>
-        </a>
-      </div>
+        </div>
+      </nav>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
       <slot />
     </main>
 
-    <footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 mt-12 text-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <div>
-          <h3 class="text-white font-bold text-base mb-3">MBA — Ma Boutique Algérienne</h3>
-          <p class="text-slate-400 text-xs leading-relaxed" data-i18n="footer.about">
-            La première plateforme e-commerce multi-vendeurs dédiée au marché algérien.
-            Livraison dans les 58 Wilayas et paiements sécurisés en Dinars Algériens (DZD).
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 text-xs border-t border-slate-800 mt-16 pt-12 pb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+
+        <!-- Col 1: Brand -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-emerald-700 flex items-center justify-center font-black text-amber-400 text-base">
+              MBA
+            </div>
+            <span class="font-extrabold text-white text-base">Ma Boutique Algérienne</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed text-xs" data-i18n="footer.desc">
+            Plateforme e-commerce multi-vendeurs de référence en Algérie. Achetez directement auprès des commerçants et artisans locaux avec livraison dans les 58 Wilayas.
           </p>
-        </div>
-        <div>
-          <h4 class="text-white font-semibold text-sm mb-3" data-i18n="footer.quickNav">Navigation rapide</h4>
-          <ul class="space-y-2 text-xs">
-            <li><a href="/" class="hover:text-emerald-400 transition" data-i18n="nav.home">Accueil</a></li>
-            <li><a href="/catalog" class="hover:text-emerald-400 transition" data-i18n="nav.catalog">Catalogue Produits</a></li>
-            <li><a href="/vendors" class="hover:text-emerald-400 transition" data-i18n="nav.vendors">Boutiques Partenaires</a></li>
-            <li><a href="/orders" class="hover:text-emerald-400 transition" data-i18n="nav.tracking">Suivre ma commande</a></li>
-            <li><a href="/cart" class="hover:text-emerald-400 transition" data-i18n="nav.cart">Mon Panier</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-white font-semibold text-sm mb-3" data-i18n="footer.paymentMethods">Modes de Règlement</h4>
-          <p class="text-xs text-slate-400 leading-relaxed mb-2" data-i18n="reassurance.codDesc">
-            Paiement à la livraison (Cash on Delivery) disponible dans toutes les wilayas.
-          </p>
-          <div class="inline-block bg-slate-800 px-3 py-1.5 rounded-lg text-emerald-400 font-mono text-xs font-semibold" data-i18n="reassurance.currency">
-            Monnaie : Dinars Algériens (DZD)
+          <div class="inline-flex items-center gap-2 text-amber-400 font-bold bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+            <span>🇩🇿 100% Algérien • Paiement DZD</span>
           </div>
         </div>
+
+        <!-- Col 2: Categories -->
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3 uppercase tracking-wider" data-i18n="footer.categories">Catégories Principales</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="/catalog?category=electronique" class="hover:text-amber-400 transition">Électronique & High-Tech</a></li>
+            <li><a href="/catalog?category=maison" class="hover:text-amber-400 transition">Maison & Cuisine</a></li>
+            <li><a href="/catalog?category=mode" class="hover:text-amber-400 transition">Mode Homme & Femme</a></li>
+            <li><a href="/catalog?category=beaute" class="hover:text-amber-400 transition">Beauté & Santé</a></li>
+            <li><a href="/catalog?category=auto-moto" class="hover:text-amber-400 transition">Auto & Moto</a></li>
+            <li><a href="/catalog?category=jardin" class="hover:text-amber-400 transition">Jardin & Bricolage</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Assistance & Client -->
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3 uppercase tracking-wider" data-i18n="footer.support">Assistance & Client</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="/orders" class="hover:text-amber-400 transition" data-i18n="nav.tracking">Suivi de commande</a></li>
+            <li><a href="/account" class="hover:text-amber-400 transition" data-i18n="header.myAccount">Mon espace client</a></li>
+            <li><a href="/vendors" class="hover:text-amber-400 transition">Nos vendeurs partenaires</a></li>
+            <li><a href="/faq" class="hover:text-amber-400 transition">Foire aux questions (FAQ)</a></li>
+            <li><a href="/contact" class="hover:text-amber-400 transition">Contact & Support client</a></li>
+            <li><a href="/delivery-rates" class="hover:text-amber-400 transition">Tarifs de livraison 58 Wilayas</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Trust & Payment -->
+        <div>
+          <h4 class="font-bold text-white text-sm mb-3 uppercase tracking-wider" data-i18n="footer.guarantees">Garanties & Confiance</h4>
+          <p class="text-slate-400 leading-relaxed mb-3">
+            Commandez en toute tranquillité. Vous payez en espèces uniquement à la réception de votre colis.
+          </p>
+          <div class="p-3 bg-emerald-950/60 rounded-xl border border-emerald-800/60 text-emerald-200">
+            <span class="font-bold block text-xs text-amber-400">💵 Paiement à la Livraison (COD)</span>
+            <span class="text-[11px] block text-emerald-300">Inspectez votre commande avant de payer.</span>
+          </div>
+        </div>
+
       </div>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
-        <p>&copy; {new Date().getFullYear()} MBA — Ma Boutique Algérienne. <span data-i18n="common.allRightsReserved">Tous droits réservés.</span></p>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-[11px]">
+        <p>&copy; {new Date().getFullYear()} MBA — Ma Boutique Algérienne. Tout droit réservé.</p>
+        <div class="flex gap-4">
+          <a href="/terms" class="hover:text-slate-300 transition">Conditions Générales d'Utilisation</a>
+          <a href="/privacy" class="hover:text-slate-300 transition">Politique de Confidentialité</a>
+          <a href="/legal" class="hover:text-slate-300 transition">Mentions Légales</a>
+        </div>
       </div>
     </footer>
 
-    <script id="i18n-script">
+    <!-- i18n & Client Scripts -->
+    <script id="mba-global-script">
       const DICT = {
         fr: {
-          'nav.home': 'Accueil',
-          'nav.catalog': 'Catalogue',
-          'nav.vendors': 'Boutiques',
-          'nav.tracking': 'Suivi',
-          'nav.cart': 'Panier',
-          'footer.about': 'La première plateforme e-commerce multi-vendeurs dédiée au marché algérien. Livraison dans les 58 Wilayas et paiements sécurisés en Dinars Algériens (DZD).',
-          'footer.quickNav': 'Navigation rapide',
-          'footer.paymentMethods': 'Modes de Règlement',
-          'reassurance.codDesc': 'Paiement à la livraison (Cash on Delivery) disponible dans toutes les wilayas.',
-          'reassurance.currency': 'Monnaie : Dinars Algériens (DZD)',
-          'common.allRightsReserved': 'Tous droits réservés.',
+          'topbar.sellOnMba': 'Vendre sur MBA',
+          'topbar.help': 'Aide & Support',
+          'header.myAccount': 'Mon compte',
+          'header.loginRegister': 'Connexion / Inscription',
+          'header.cart': 'Panier',
+          'menu.allCategories': 'Toutes les catégories',
+          'menu.offers': 'Offres & Promos',
+          'cat.electronics': 'Électronique',
+          'cat.home': 'Maison',
+          'cat.fashion': 'Mode',
+          'cat.beauty': 'Beauté',
+          'cat.auto': 'Auto & Moto',
+          'cat.garden': 'Jardin',
+          'cat.sport': 'Sport',
+          'cat.kids': 'Enfants',
+          'footer.desc': 'Plateforme e-commerce multi-vendeurs de référence en Algérie. Achetez directement auprès des commerçants et artisans locaux avec livraison dans les 58 Wilayas.',
+          'footer.categories': 'Catégories Principales',
+          'footer.support': 'Assistance & Client',
+          'footer.guarantees': 'Garanties & Confiance',
+          'nav.tracking': 'Suivi de commande'
         },
         ar: {
-          'nav.home': 'الرئيسية',
-          'nav.catalog': 'الكتالوج',
-          'nav.vendors': 'المتاجر',
-          'nav.tracking': 'تتبع الطلب',
-          'nav.cart': 'السلة',
-          'footer.about': 'المنصة الأولى للتجارة الإلكترونية متعددة البائعين المخصصة للسوق الجزائرية. التوصيل لـ 58 ولاية والدفع عند الاستلام بالدينار الجزائري.',
-          'footer.quickNav': 'التنقل السريع',
-          'footer.paymentMethods': 'طرق الدفع',
-          'reassurance.codDesc': 'الدفع عند الاستلام متاح في جميع الولايات.',
-          'reassurance.currency': 'العملة : الدينار الجزائري (د.ج)',
-          'common.allRightsReserved': 'جميع الحقوق محفوظة.',
+          'topbar.sellOnMba': 'البيع على MBA',
+          'topbar.help': 'المساعدة والدعم',
+          'header.myAccount': 'حسابي',
+          'header.loginRegister': 'تسجيل الدخول / إنشاء حساب',
+          'header.cart': 'السلة',
+          'menu.allCategories': 'جميع التصنيفات',
+          'menu.offers': 'العروض والتخفيضات',
+          'cat.electronics': 'إلكترونيات',
+          'cat.home': 'المنزل',
+          'cat.fashion': 'الموضة',
+          'cat.beauty': 'الجمال',
+          'cat.auto': 'سيارات ودراجات',
+          'cat.garden': 'حديقة',
+          'cat.sport': 'رياضة',
+          'cat.kids': 'أطفال',
+          'footer.desc': 'منصة التجارة الإلكترونية متعددة البائعين الأولى في الجزائر. اشترِ مباشرة من التجار والحرفيين المحليين مع التوصيل لـ 58 ولاية.',
+          'footer.categories': 'الأقسام الرئيسية',
+          'footer.support': 'المساعدة والزبائن',
+          'footer.guarantees': ' الضمانات والاطمئنان',
+          'nav.tracking': 'تتبع الطلب'
         }
       };
 
@@ -190,20 +323,19 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
 
       function applyLanguage(lang) {
         const root = document.documentElement;
+        const frBtn = document.getElementById('top-lang-fr');
+        const arBtn = document.getElementById('top-lang-ar');
+
         if (lang === 'ar') {
           root.setAttribute('dir', 'rtl');
           root.setAttribute('lang', 'ar');
-          document.getElementById('lang-btn-ar')?.classList.add('bg-emerald-600', 'text-white');
-          document.getElementById('lang-btn-ar')?.classList.remove('text-slate-400');
-          document.getElementById('lang-btn-fr')?.classList.remove('bg-emerald-600', 'text-white');
-          document.getElementById('lang-btn-fr')?.classList.add('text-slate-400');
+          if (frBtn) frBtn.className = "hover:text-amber-300 px-1 text-emerald-200";
+          if (arBtn) arBtn.className = "hover:text-amber-300 px-1 text-amber-400 font-bold";
         } else {
           root.setAttribute('dir', 'ltr');
           root.setAttribute('lang', 'fr');
-          document.getElementById('lang-btn-fr')?.classList.add('bg-emerald-600', 'text-white');
-          document.getElementById('lang-btn-fr')?.classList.remove('text-slate-400');
-          document.getElementById('lang-btn-ar')?.classList.remove('bg-emerald-600', 'text-white');
-          document.getElementById('lang-btn-ar')?.classList.add('text-slate-400');
+          if (frBtn) frBtn.className = "hover:text-amber-300 px-1 text-amber-400 font-bold";
+          if (arBtn) arBtn.className = "hover:text-amber-300 px-1 text-emerald-200";
         }
 
         const dict = DICT[lang] || DICT.fr;
@@ -215,52 +347,103 @@ const { title, description = "MBA — Ma Boutique Algérienne Marketplace. Déco
         });
       }
 
-      function updateCartBadge() {
+      function updateBadges() {
         try {
+          // Cart Badge
           const cart = JSON.parse(localStorage.getItem('mba_cart') || '[]');
           const count = cart.reduce((acc, item) => acc + (item.quantity || 1), 0);
           const badge = document.getElementById('cart-badge');
-          const badgeMobile = document.getElementById('cart-badge-mobile');
-          if (badge) {
-            if (count > 0) {
-              badge.textContent = count;
-              badge.classList.remove('hidden');
-            } else {
-              badge.classList.add('hidden');
-            }
+          if (badge) badge.textContent = count;
+
+          // Wishlist Badge
+          const wishlist = JSON.parse(localStorage.getItem('mba_wishlist') || '[]');
+          const wishBadge = document.getElementById('wishlist-badge');
+          if (wishBadge) {
+            wishBadge.textContent = wishlist.length;
+            if (wishlist.length > 0) wishBadge.classList.remove('hidden');
+            else wishBadge.classList.add('hidden');
           }
-          if (badgeMobile) {
-            badgeMobile.textContent = count;
+
+          // User Info
+          const token = localStorage.getItem('mba_token');
+          const userStr = localStorage.getItem('mba_user');
+          if (token && userStr) {
+            const user = JSON.parse(userStr);
+            const greeting = document.getElementById('user-greeting');
+            const subtext = document.getElementById('user-subtext');
+            if (greeting) greeting.textContent = user.full_name || 'Mon Espace';
+            if (subtext) subtext.textContent = 'Compte actif';
           }
         } catch (e) {
           console.error(e);
         }
       }
 
+      function changeActiveWilaya(wilaya) {
+        localStorage.setItem('mba_selected_wilaya', wilaya);
+        window.dispatchEvent(new CustomEvent('wilaya-changed', { detail: wilaya }));
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const currentLang = localStorage.getItem('mba_lang') || 'fr';
         applyLanguage(currentLang);
-        updateCartBadge();
+        updateBadges();
 
-        const mobileBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileBtn && mobileMenu) {
-          mobileBtn.addEventListener('click', () => {
-            const isOpen = !mobileMenu.classList.contains('hidden');
-            if (isOpen) {
-              mobileMenu.classList.add('hidden');
-              mobileBtn.setAttribute('aria-expanded', 'false');
-            } else {
-              mobileMenu.classList.remove('hidden');
-              mobileBtn.setAttribute('aria-expanded', 'true');
+        const savedWilaya = localStorage.getItem('mba_selected_wilaya');
+        if (savedWilaya) {
+          const sel = document.getElementById('wilaya-selector');
+          if (sel) sel.value = savedWilaya;
+        }
+
+        // Live Search Input handler
+        const searchInput = document.getElementById('search-input');
+        const suggestionsBox = document.getElementById('search-suggestions');
+
+        if (searchInput && suggestionsBox) {
+          searchInput.addEventListener('input', async (e) => {
+            const val = e.target.value.trim();
+            if (val.length < 2) {
+              suggestionsBox.classList.add('hidden');
+              return;
+            }
+
+            try {
+              const res = await fetch(`/api/products?search=${encodeURIComponent(val)}`);
+              if (res.ok) {
+                const data = await res.json();
+                const products = data.items || data || [];
+                if (products.length === 0) {
+                  suggestionsBox.innerHTML = '<div class="p-3 text-slate-500 text-xs">Aucun produit trouvé.</div>';
+                } else {
+                  suggestionsBox.innerHTML = products.slice(0, 5).map(p => `
+                    <a href="/products/${p.slug}" class="flex items-center gap-3 p-3 hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
+                      <img src="${p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}" class="w-10 h-10 object-cover rounded-lg shrink-0" />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-bold text-slate-800 truncate">${p.name}</div>
+                        <div class="text-xs text-emerald-700 font-black">${p.price} DA</div>
+                      </div>
+                    </a>
+                  `).join('');
+                }
+                suggestionsBox.classList.remove('hidden');
+              }
+            } catch (err) {
+              // Ignore search fetch errors
+            }
+          });
+
+          document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+              suggestionsBox.classList.add('hidden');
             }
           });
         }
       });
 
-      window.addEventListener('storage', updateCartBadge);
-      window.updateCartBadge = updateCartBadge;
+      window.addEventListener('storage', updateBadges);
+      window.updateBadges = updateBadges;
       window.setAppLanguage = setAppLanguage;
+      window.changeActiveWilaya = changeActiveWilaya;
     </script>
   </body>
 </html>

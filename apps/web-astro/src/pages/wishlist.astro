@@ -1,0 +1,101 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Mes Favoris">
+  <div class="max-w-5xl mx-auto py-6">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+          <span>❤️</span>
+          <span>Mes Produits Favoris</span>
+        </h1>
+        <p class="text-xs text-slate-500">Retrouvez les produits que vous avez enregistrés pour plus tard.</p>
+      </div>
+
+      <button onclick="clearWishlist()" id="clear-wishlist-btn" class="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 transition hidden">
+        Vider les favoris
+      </button>
+    </div>
+
+    <!-- Empty Wishlist State -->
+    <div id="wishlist-empty" class="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-xs">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-3xl">
+        💔
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-1">Votre liste de favoris est vide</h3>
+      <p class="text-xs text-slate-500 mb-6 max-w-sm mx-auto">Parcourez le catalogue et cliquez sur le cœur pour ajouter des produits à votre sélection.</p>
+      <a href="/catalog" class="inline-block bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow">
+        Explorer le catalogue
+      </a>
+    </div>
+
+    <!-- Wishlist Grid -->
+    <div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 hidden">
+      <!-- Dynamic Wishlist Cards -->
+    </div>
+  </div>
+
+  <script is:inline>
+    function renderWishlist() {
+      const wishlist = JSON.parse(localStorage.getItem('mba_wishlist') || '[]');
+      const emptyBox = document.getElementById('wishlist-empty');
+      const gridBox = document.getElementById('wishlist-grid');
+      const clearBtn = document.getElementById('clear-wishlist-btn');
+
+      if (wishlist.length === 0) {
+        emptyBox.classList.remove('hidden');
+        gridBox.classList.add('hidden');
+        clearBtn.classList.add('hidden');
+      } else {
+        emptyBox.classList.add('hidden');
+        gridBox.classList.remove('hidden');
+        clearBtn.classList.remove('hidden');
+
+        gridBox.innerHTML = wishlist.map(item => `
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs relative flex flex-col justify-between group">
+            <button onclick="removeFromWishlist(${item.id})" class="absolute top-3 right-3 text-slate-400 hover:text-red-600 bg-slate-100 p-1.5 rounded-full transition" title="Supprimer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="bg-slate-50 aspect-square rounded-xl overflow-hidden mb-3 p-2 flex items-center justify-center">
+              <img src="${item.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}" alt="${item.name}" class="max-h-full object-contain" />
+            </div>
+
+            <div>
+              <a href="/products/${item.slug}" class="font-bold text-slate-800 text-xs hover:text-emerald-800 line-clamp-2 mb-2 block leading-snug">
+                ${item.name}
+              </a>
+
+              <div class="font-black text-emerald-900 text-sm mb-4">
+                ${item.price} DA
+              </div>
+
+              <a href="/products/${item.slug}" class="block text-center w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2 rounded-xl text-xs transition">
+                Voir le produit
+              </a>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function removeFromWishlist(id) {
+      let wishlist = JSON.parse(localStorage.getItem('mba_wishlist') || '[]');
+      wishlist = wishlist.filter(item => item.id !== id);
+      localStorage.setItem('mba_wishlist', JSON.stringify(wishlist));
+      if (window.updateBadges) window.updateBadges();
+      renderWishlist();
+    }
+
+    function clearWishlist() {
+      if (confirm('Voulez-vous vraiment vider votre liste de favoris ?')) {
+        localStorage.removeItem('mba_wishlist');
+        if (window.updateBadges) window.updateBadges();
+        renderWishlist();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderWishlist);
+  </script>
+</Layout>

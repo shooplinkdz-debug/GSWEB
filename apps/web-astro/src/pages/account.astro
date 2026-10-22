@@ -1,0 +1,294 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Mon Espace Client">
+  <div id="account-root" class="max-w-4xl mx-auto py-6">
+    <!-- Auth forms container (shown if logged out) -->
+    <div id="auth-forms" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- Login Form -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
+            🔑
+          </div>
+          <h2 class="text-lg font-black text-slate-900">Connexion</h2>
+        </div>
+        <p class="text-xs text-slate-500 mb-6">Accédez à votre compte MBA pour suivre vos commandes et gérer vos adresses.</p>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Adresse e-mail</label>
+            <input type="email" id="login-email" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 outline-none" placeholder="exemple@domaine.dz" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Mot de passe</label>
+            <input type="password" id="login-password" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 outline-none" placeholder="••••••••" />
+          </div>
+
+          <div id="login-error" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-200"></div>
+
+          <button type="submit" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded-xl transition text-sm shadow-sm">
+            Se connecter
+          </button>
+        </form>
+      </div>
+
+      <!-- Register Form -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm">
+            ✨
+          </div>
+          <h2 class="text-lg font-black text-slate-900">Créer un compte</h2>
+        </div>
+        <p class="text-xs text-slate-500 mb-6">Rejoignez MBA Marketplace et profitez d'une expérience d'achat fluide.</p>
+
+        <form id="register-form" class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Prénom</label>
+              <input type="text" id="reg-firstname" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" placeholder="Karim" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nom</label>
+              <input type="text" id="reg-lastname" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" placeholder="Benali" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Adresse e-mail</label>
+            <input type="email" id="reg-email" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" placeholder="karim@domaine.dz" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Numéro de téléphone</label>
+            <input type="tel" id="reg-phone" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" placeholder="0550 12 34 56" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Mot de passe</label>
+            <input type="password" id="reg-password" required minlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" placeholder="••••••••" />
+          </div>
+
+          <div id="register-error" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-200"></div>
+
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-sm shadow-sm">
+            S'inscrire gratuitement
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Authenticated Dashboard (shown if logged in) -->
+    <div id="user-dashboard" class="hidden space-y-6">
+
+      <!-- User Profile Header -->
+      <div class="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white rounded-3xl p-6 shadow-md border border-emerald-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-400 text-slate-950 font-black text-2xl flex items-center justify-center shadow">
+            <span id="dash-avatar">U</span>
+          </div>
+          <div>
+            <h1 id="dash-name" class="text-xl font-black">Bonjour !</h1>
+            <p id="dash-email" class="text-xs text-emerald-200">client@domaine.dz</p>
+            <span class="inline-block bg-emerald-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1 border border-amber-400/30">
+              🇩🇿 Client MBA Certifié
+            </span>
+          </div>
+        </div>
+
+        <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow">
+          Déconnexion
+        </button>
+      </div>
+
+      <!-- Dashboard Sections: Profile details & Orders -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Profile Info Card -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <span>👤</span>
+            <span>Informations personnelles</span>
+          </h2>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <span class="text-slate-400 block font-semibold">Nom complet</span>
+              <span id="profile-full-name" class="font-bold text-slate-800 text-sm">--</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block font-semibold">Téléphone principal</span>
+              <span id="profile-phone" class="font-bold text-slate-800">Non renseigné</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block font-semibold">Wilaya par défaut</span>
+              <span id="profile-wilaya" class="font-bold text-emerald-800">Blida</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order History List -->
+        <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <div class="flex justify-between items-center">
+            <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span>📦</span>
+              <span>Mes commandes récents</span>
+            </h2>
+            <a href="/orders" class="text-emerald-800 hover:underline text-xs font-bold">Voir tout &rarr;</a>
+          </div>
+
+          <div id="orders-loading" class="text-xs text-slate-400 py-4 text-center">Chargement des commandes...</div>
+          <div id="orders-list" class="space-y-3 hidden">
+            <!-- Dynamic orders list -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script is:inline>
+    async function checkAuth() {
+      const token = localStorage.getItem('mba_token');
+      const userStr = localStorage.getItem('mba_user');
+      const authForms = document.getElementById('auth-forms');
+      const userDash = document.getElementById('user-dashboard');
+
+      if (token && userStr) {
+        authForms.classList.add('hidden');
+        userDash.classList.remove('hidden');
+
+        const user = JSON.parse(userStr);
+        document.getElementById('dash-avatar').textContent = (user.first_name || 'U').substring(0,1).toUpperCase();
+        document.getElementById('dash-name').textContent = `Bonjour, ${user.first_name || ''} ${user.last_name || ''}`;
+        document.getElementById('dash-email').textContent = user.email || '';
+
+        document.getElementById('profile-full-name').textContent = `${user.first_name || ''} ${user.last_name || ''}`;
+        document.getElementById('profile-phone').textContent = user.phone || localStorage.getItem('mba_user_phone') || 'Non renseigné';
+        document.getElementById('profile-wilaya').textContent = localStorage.getItem('mba_selected_wilaya') || 'Blida';
+
+        fetchUserOrders();
+      } else {
+        authForms.classList.remove('hidden');
+        userDash.classList.add('hidden');
+      }
+    }
+
+    async function fetchUserOrders() {
+      const token = localStorage.getItem('mba_token');
+      const ordersList = document.getElementById('orders-list');
+      const ordersLoading = document.getElementById('orders-loading');
+
+      try {
+        const res = await fetch('/api/orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const orders = await res.json();
+          ordersLoading.classList.add('hidden');
+          ordersList.classList.remove('hidden');
+
+          if (orders.length === 0) {
+            ordersList.innerHTML = '<p class="text-xs text-slate-500 py-4">Vous n\'avez passé aucune commande pour le moment.</p>';
+            return;
+          }
+
+          ordersList.innerHTML = orders.slice(0, 5).map(o => `
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+              <div>
+                <span class="font-bold text-slate-900 block">N° ${o.order_number || o.id}</span>
+                <span class="text-slate-400">${new Date(o.created_at || Date.now()).toLocaleDateString('fr-FR')}</span>
+              </div>
+              <div class="text-right">
+                <span class="font-black text-emerald-800 block">${o.total_amount} DA</span>
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold ${o.status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                  ${o.status || 'En attente'}
+                </span>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        ordersLoading.textContent = 'Erreur lors du chargement des commandes.';
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('mba_token');
+      localStorage.removeItem('mba_user');
+      window.location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+
+      // Login Listener
+      document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errDiv = document.getElementById('login-error');
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            localStorage.setItem('mba_token', data.token);
+            localStorage.setItem('mba_user', JSON.stringify(data.user));
+            window.location.reload();
+          } else {
+            errDiv.textContent = data.error || 'Erreur de connexion.';
+            errDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          errDiv.textContent = 'Erreur réseau.';
+          errDiv.classList.remove('hidden');
+        }
+      });
+
+      // Register Listener
+      document.getElementById('register-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const firstName = document.getElementById('reg-firstname').value;
+        const lastName = document.getElementById('reg-lastname').value;
+        const email = document.getElementById('reg-email').value;
+        const phone = document.getElementById('reg-phone').value;
+        const password = document.getElementById('reg-password').value;
+        const errDiv = document.getElementById('register-error');
+
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, firstName, lastName })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            localStorage.setItem('mba_token', data.token);
+            localStorage.setItem('mba_user', JSON.stringify(data.user));
+            if (phone) localStorage.setItem('mba_user_phone', phone);
+            window.location.reload();
+          } else {
+            errDiv.textContent = data.error || 'Erreur d\'inscription.';
+            errDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          errDiv.textContent = 'Erreur réseau.';
+          errDiv.classList.remove('hidden');
+        }
+      });
+    });
+  </script>
+</Layout>
