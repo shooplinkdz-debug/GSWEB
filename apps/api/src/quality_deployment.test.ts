@@ -113,3 +113,30 @@ describe('Mission 20: Final Documentation & Project Summary', () => {
     expect(content).toContain('Redis');
   });
 });
+
+describe('Mission 21: Final Project Validation & Recipe Certification', () => {
+  const rootDir = path.resolve(__dirname, '../../..');
+
+  test('missionMBA/INDEX.md should exist and mark 100% of missions as Terminée', () => {
+    const indexPath = path.join(rootDir, 'missionMBA', 'INDEX.md');
+    expect(fs.existsSync(indexPath)).toBe(true);
+
+    const content = fs.readFileSync(indexPath, 'utf-8');
+    const tableLines = content
+      .split('\n')
+      .filter((line) => line.trim().startsWith('| **'));
+
+    expect(tableLines.length).toBe(22); // Missions 00 to 21
+    tableLines.forEach((line) => {
+      expect(line).toContain('| Terminée |');
+    });
+
+    // Check all mission files 00 to 21 exist
+    for (let i = 0; i <= 21; i++) {
+      const prefix = i < 10 ? `0${i}` : `${i}`;
+      const missionFiles = fs.readdirSync(path.join(rootDir, 'missionMBA'));
+      const found = missionFiles.some((f) => f.startsWith(prefix));
+      expect(found).toBe(true);
+    }
+  });
+});

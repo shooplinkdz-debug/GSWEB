@@ -23,13 +23,13 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | **12** | Logistique & Livraison Algérie (58 Wilayas) | `12_LIVRAISON_ALGERIE.md` | Missions 10, 11 | Terminée |
 | **13** | Paiements (COD) & Commissions Vendeurs | `13_PAIEMENT_ET_COMMISSION.md` | Missions 10, 11 | Terminée |
 | **14** | Recherche Intelligente & Assistant IA | `14_RECHERCHE_INTELLIGENTE_IA.md` | Missions 06, 09 | Terminée |
-| **15** | Design System Responsive, FR/AR & RTL | `15_INTERFACE_DESIGN_RESPONSIVE.md` | Missions 07, 08 | À faire |
-| **16** | Sécurité, Caching Redis & Performances | `16_SECURITE_PERFORMANCES.md` | Missions 04, 06 | À faire |
-| **17** | Tests & Assurance Qualité | `17_TESTS_QUALITE.md` | Toutes missions | À faire |
+| **15** | Design System Responsive, FR/AR & RTL | `15_INTERFACE_DESIGN_RESPONSIVE.md` | Missions 07, 08 | Terminée |
+| **16** | Sécurité, Caching Redis & Performances | `16_SECURITE_PERFORMANCES.md` | Missions 04, 06 | Terminée |
+| **17** | Tests & Assurance Qualité | `17_TESTS_QUALITE.md` | Toutes missions | Terminée |
 | **18** | Intégration Google Sheets (Optionnelle) | `18_INTEGRATION_GOOGLE_SHEETS.md` | Missions 06, 11 | Terminée |
 | **19** | Documentation & Guide d'Installation | `19_DOCUMENTATION_INSTALLATION.md` | Toutes missions | Terminée |
 | **20** | Déploiement & Maintenance | `20_DEPLOIEMENT_ET_MISE_A_JOUR.md` | Mission 19 | Terminée |
-| **21** | Validation Finale du Projet | `21_VALIDATION_FINALE.md` | Toutes missions | À faire |
+| **21** | Validation Finale du Projet | `21_VALIDATION_FINALE.md` | Toutes missions | Terminée |
 
 ---
 
