@@ -27,7 +27,7 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | **16** | Sécurité, Caching Redis & Performances | `16_SECURITE_PERFORMANCES.md` | Missions 04, 06 | À faire |
 | **17** | Tests & Assurance Qualité | `17_TESTS_QUALITE.md` | Toutes missions | À faire |
 | **18** | Intégration Google Sheets (Optionnelle) | `18_INTEGRATION_GOOGLE_SHEETS.md` | Missions 06, 11 | Terminée |
-| **19** | Documentation & Guide d'Installation | `19_DOCUMENTATION_INSTALLATION.md` | Toutes missions | À faire |
+| **19** | Documentation & Guide d'Installation | `19_DOCUMENTATION_INSTALLATION.md` | Toutes missions | Terminée |
 | **20** | Déploiement & Maintenance | `20_DEPLOIEMENT_ET_MISE_A_JOUR.md` | Mission 19 | À faire |
 | **21** | Validation Finale du Projet | `21_VALIDATION_FINALE.md` | Toutes missions | À faire |
 
