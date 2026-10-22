@@ -427,7 +427,7 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
       expect(res.body.desk_fee).toBe('300.00');
     });
 
-    it('should verify Mission 11, Mission 12 & Mission 13 are marked as Terminée in INDEX.md', () => {
+    it('should verify Mission 11, Mission 12, Mission 13 & Mission 14 are marked as Terminée in INDEX.md', () => {
       const rootDir = path.resolve(__dirname, '../../..');
       const indexPath = path.join(rootDir, 'missionMBA/INDEX.md');
       const content = fs.readFileSync(indexPath, 'utf-8');
@@ -435,6 +435,7 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
       expect(content).toMatch(/\|\s*\*\*11\*\*\s*\|\s*Panier & Commandes Multi-Boutiques\s*\|.*\|\s*Terminée\s*\|/);
       expect(content).toMatch(/\|\s*\*\*12\*\*\s*\|.*Logistique & Livraison Algérie \(58 Wilayas\).*\|\s*Terminée\s*\|/);
       expect(content).toMatch(/\|\s*\*\*13\*\*\s*\|.*Paiements \(COD\) & Commissions Vendeurs.*\|\s*Terminée\s*\|/);
+      expect(content).toMatch(/\|\s*\*\*14\*\*\s*\|.*Recherche Intelligente & Assistant IA.*\|\s*Terminée\s*\|/);
     });
   });
 });
