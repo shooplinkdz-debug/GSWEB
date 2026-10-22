@@ -1,0 +1,12 @@
+-- Migration 006: Commission rates, vendor payouts and Cash on Delivery (COD) tracking
+
+ALTER TABLE vendors ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5, 2) DEFAULT 10.00;
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_amount NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS vendor_payout NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(50);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_confirmed BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS commission_rate NUMERIC(5, 2) DEFAULT 10.00;
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS commission_amount NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS vendor_payout NUMERIC(10, 2) DEFAULT 0.00;

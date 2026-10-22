@@ -101,6 +101,41 @@ router.get('/vendor/me', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MAN
   }
 });
 
+// PUT /api/orders/:id/confirm-phone (Confirm COD order phone/SMS)
+const confirmPhoneHandler = async (req: AuthRequest, res: Response) => {
+  const orderId = req.params.id;
+  try {
+    let checkRes;
+    if (isNaN(Number(orderId))) {
+      checkRes = await pool.query('SELECT * FROM orders WHERE order_number = $1', [orderId]);
+    } else {
+      checkRes = await pool.query('SELECT * FROM orders WHERE id = $1 OR order_number = $2', [orderId, orderId]);
+    }
+
+    if (checkRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Commande introuvable.' });
+    }
+
+    const order = checkRes.rows[0];
+    const newStatus = order.status === 'PENDING' ? 'CONFIRMED' : order.status;
+
+    const updateRes = await pool.query(
+      `UPDATE orders SET is_confirmed = true, status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [newStatus, order.id]
+    );
+
+    res.json({
+      message: 'Commande confirmée par téléphone/SMS avec succès.',
+      order: updateRes.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la confirmation téléphonique de la commande.' });
+  }
+};
+
+router.put('/:id/confirm-phone', optionalAuth, confirmPhoneHandler);
+router.put('/:id/confirm', optionalAuth, confirmPhoneHandler);
+
 // PUT /api/orders/:id/status (Admin/Manager/Vendor)
 router.put('/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER', 'VENDOR']), async (req: AuthRequest, res: Response) => {
   const { status } = req.body;
@@ -177,20 +212,33 @@ router.get('/:id/split', async (req: AuthRequest, res: Response) => {
     itemsResult.rows.forEach((item) => {
       const vKey = item.vendor_id || 'platform';
       const vName = item.vendor_name || 'Ma Boutique Algérienne';
+      const itemSubtotal = Number(item.unit_price) * Number(item.quantity);
+      const itemCommRate = item.commission_rate !== undefined && item.commission_rate !== null ? Number(item.commission_rate) : 10.00;
+      const itemCommAmount = item.commission_amount !== undefined && item.commission_amount !== null
+        ? Number(item.commission_amount)
+        : Number((itemSubtotal * (itemCommRate / 100)).toFixed(2));
+      const itemPayout = item.vendor_payout !== undefined && item.vendor_payout !== null
+        ? Number(item.vendor_payout)
+        : Number((itemSubtotal - itemCommAmount).toFixed(2));
+
       if (!vendorMap.has(vKey)) {
         vendorMap.set(vKey, {
-          vendor_id: item.vendor_id,
+          vendor_id: item.vendor_id || null,
           vendor_name: vName,
           vendor_slug: item.vendor_slug || null,
-          items: [],
+          commission_rate: itemCommRate,
           subtotal: 0,
+          total_commission: 0,
+          vendor_payout: 0,
+          items: [],
         });
       }
 
       const group = vendorMap.get(vKey);
-      const itemSubtotal = Number(item.unit_price) * Number(item.quantity);
       group.items.push(item);
       group.subtotal += itemSubtotal;
+      group.total_commission += itemCommAmount;
+      group.vendor_payout += itemPayout;
     });
 
     res.json({
@@ -237,11 +285,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 // POST /api/orders (Public / Checkout avec Test Payment ou COD)
 router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
-  const { customer_name, customer_email, shipping_address, items, test_card_number, payment_method } = req.body;
+  const { customer_name, customer_email, customer_phone, phone, shipping_address, items, test_card_number, payment_method } = req.body;
 
   if (!customer_name || !customer_email || !shipping_address || !items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Champs requis manquants pour la commande.' });
   }
+
+  const phoneNum = customer_phone || phone || null;
 
   // Payment method logic: 'TEST_CARD' or 'COD'
   const mode = payment_method || (test_card_number ? 'TEST_CARD' : 'COD');
@@ -257,10 +307,18 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     await client.query('BEGIN');
 
     let itemsSubtotal = 0;
+    let totalCommission = 0;
+    let totalVendorPayout = 0;
     const validatedItems = [];
 
     for (const item of items) {
-      const prodRes = await client.query('SELECT * FROM products WHERE id = $1 FOR UPDATE', [item.product_id]);
+      const prodRes = await client.query(
+        `SELECT p.*, v.commission_rate as vendor_commission_rate
+         FROM products p
+         LEFT JOIN vendors v ON p.vendor_id = v.id
+         WHERE p.id = $1 FOR UPDATE`,
+        [item.product_id]
+      );
       if (prodRes.rows.length === 0) {
         throw new Error(`Produit ID ${item.product_id} non trouvé.`);
       }
@@ -276,12 +334,24 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       const itemTotal = Number(product.price) * Number(item.quantity);
       itemsSubtotal += itemTotal;
 
+      const commRate = product.vendor_id && product.vendor_commission_rate !== null && product.vendor_commission_rate !== undefined
+        ? Number(product.vendor_commission_rate)
+        : 10.00;
+      const itemComm = Number((itemTotal * (commRate / 100)).toFixed(2));
+      const itemPayout = Number((itemTotal - itemComm).toFixed(2));
+
+      totalCommission += itemComm;
+      totalVendorPayout += itemPayout;
+
       validatedItems.push({
         product_id: product.id,
         vendor_id: product.vendor_id || null,
         product_name: product.name,
         unit_price: product.price,
         quantity: item.quantity,
+        commission_rate: commRate,
+        commission_amount: itemComm,
+        vendor_payout: itemPayout,
       });
     }
 
@@ -312,21 +382,46 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
     const orderNumber = `CMD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const userId = req.user ? req.user.id : null;
     const initialStatus = mode === 'TEST_CARD' ? 'PAID' : 'PENDING';
+    const isConfirmed = mode === 'TEST_CARD';
 
     const orderRes = await client.query(
-      `INSERT INTO orders (order_number, user_id, customer_name, customer_email, shipping_address, shipping_fee, total_amount, status, payment_method)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO orders (order_number, user_id, customer_name, customer_email, customer_phone, shipping_address, shipping_fee, total_amount, commission_amount, vendor_payout, status, payment_method, is_confirmed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
-      [orderNumber, userId, customer_name, customer_email, shipping_address, shippingFee, totalAmount, initialStatus, mode]
+      [
+        orderNumber,
+        userId,
+        customer_name,
+        customer_email,
+        phoneNum,
+        shipping_address,
+        shippingFee,
+        totalAmount,
+        totalCommission,
+        totalVendorPayout,
+        initialStatus,
+        mode,
+        isConfirmed,
+      ]
     );
 
     const order = orderRes.rows[0];
 
     for (const item of validatedItems) {
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, vendor_id, product_name, unit_price, quantity)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [order.id, item.product_id, item.vendor_id, item.product_name, item.unit_price, item.quantity]
+        `INSERT INTO order_items (order_id, product_id, vendor_id, product_name, unit_price, quantity, commission_rate, commission_amount, vendor_payout)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          order.id,
+          item.product_id,
+          item.vendor_id,
+          item.product_name,
+          item.unit_price,
+          item.quantity,
+          item.commission_rate,
+          item.commission_amount,
+          item.vendor_payout,
+        ]
       );
     }
 

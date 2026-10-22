@@ -106,6 +106,63 @@ router.put('/me', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER'])
   }
 });
 
+// GET /api/vendors/me/commissions - Vendor financial recap (Sales, commissions, net payout)
+const vendorCommissionsHandler = async (req: AuthRequest, res: any) => {
+  try {
+    const vendorRes = await pool.query(`SELECT * FROM vendors WHERE user_id = $1`, [req.user?.id]);
+    if (vendorRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil vendeur non trouvé.' });
+    }
+
+    const vendor = vendorRes.rows[0];
+    const vendorId = vendor.id;
+
+    const summaryRes = await pool.query(
+      `SELECT
+        COUNT(DISTINCT oi.order_id) as total_orders,
+        COALESCE(SUM(oi.unit_price * oi.quantity), 0) as gross_sales,
+        COALESCE(SUM(oi.commission_amount), 0) as total_commission,
+        COALESCE(SUM(oi.vendor_payout), 0) as net_payout
+       FROM order_items oi
+       JOIN orders o ON oi.order_id = o.id
+       WHERE oi.vendor_id = $1 AND o.status != 'CANCELLED'`,
+      [vendorId]
+    );
+
+    const itemsRes = await pool.query(
+      `SELECT
+        oi.*,
+        o.order_number,
+        o.status as order_status,
+        o.payment_method,
+        o.created_at as order_date
+       FROM order_items oi
+       JOIN orders o ON oi.order_id = o.id
+       WHERE oi.vendor_id = $1
+       ORDER BY oi.id DESC`,
+      [vendorId]
+    );
+
+    const summary = summaryRes.rows[0];
+
+    res.json({
+      vendorId: vendor.id,
+      companyName: vendor.company_name,
+      commissionRate: parseFloat(vendor.commission_rate || '10.00'),
+      totalOrders: parseInt(summary.total_orders, 10),
+      grossSales: parseFloat(summary.gross_sales),
+      totalCommission: parseFloat(summary.total_commission),
+      netPayout: parseFloat(summary.net_payout),
+      items: itemsRes.rows,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des commissions du vendeur.' });
+  }
+};
+
+router.get('/me/commissions', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), vendorCommissionsHandler);
+router.get('/me/payouts', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), vendorCommissionsHandler);
+
 // GET /api/vendors/me/stats - Current vendor statistics
 router.get('/me/stats', authenticateToken, requireRole(['VENDOR', 'ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   try {

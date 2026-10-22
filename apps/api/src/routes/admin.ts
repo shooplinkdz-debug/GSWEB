@@ -136,6 +136,83 @@ router.get('/vendors', authenticateToken, requireRole(['ADMIN', 'MANAGER']), asy
   }
 });
 
+// GET /api/admin/commissions - Admin financial summary (Sales, COD, Commissions, Vendor Payouts)
+router.get('/commissions', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req, res) => {
+  try {
+    const summaryRes = await pool.query(`
+      SELECT
+        COALESCE(SUM(total_amount), 0) as total_sales,
+        COALESCE(SUM(CASE WHEN payment_method = 'COD' AND status IN ('PENDING', 'CONFIRMED') THEN total_amount ELSE 0 END), 0) as pending_cod_amount,
+        COALESCE(SUM(CASE WHEN status IN ('PAID', 'DELIVERED') THEN total_amount ELSE 0 END), 0) as collected_amount,
+        COALESCE(SUM(commission_amount), 0) as total_commission,
+        COALESCE(SUM(vendor_payout), 0) as total_vendor_payout
+      FROM orders
+      WHERE status != 'CANCELLED'
+    `);
+
+    const vendorsRes = await pool.query(`
+      SELECT
+        v.id as vendor_id,
+        v.company_name,
+        COALESCE(v.commission_rate, 10.00) as commission_rate,
+        COUNT(DISTINCT oi.order_id) as total_orders,
+        COALESCE(SUM(oi.unit_price * oi.quantity), 0) as total_sales,
+        COALESCE(SUM(oi.commission_amount), 0) as total_commission,
+        COALESCE(SUM(oi.vendor_payout), 0) as net_payout
+      FROM vendors v
+      LEFT JOIN order_items oi ON v.id = oi.vendor_id
+      LEFT JOIN orders o ON oi.order_id = o.id AND o.status != 'CANCELLED'
+      GROUP BY v.id, v.company_name, v.commission_rate
+      ORDER BY v.id DESC
+    `);
+
+    const summary = summaryRes.rows[0];
+
+    res.json({
+      totalSales: parseFloat(summary.total_sales),
+      pendingCodAmount: parseFloat(summary.pending_cod_amount),
+      collectedAmount: parseFloat(summary.collected_amount),
+      totalCommission: parseFloat(summary.total_commission),
+      totalVendorPayout: parseFloat(summary.total_vendor_payout),
+      vendors: vendorsRes.rows.map((row) => ({
+        vendor_id: row.vendor_id,
+        company_name: row.company_name,
+        commission_rate: parseFloat(row.commission_rate),
+        total_orders: parseInt(row.total_orders, 10),
+        total_sales: parseFloat(row.total_sales),
+        total_commission: parseFloat(row.total_commission),
+        net_payout: parseFloat(row.net_payout),
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération des rapports de commissions.' });
+  }
+});
+
+// PUT /api/admin/vendors/:id/commission - Update vendor specific commission rate
+router.put('/vendors/:id/commission', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
+  const { commission_rate } = req.body;
+  if (commission_rate === undefined || isNaN(Number(commission_rate)) || Number(commission_rate) < 0 || Number(commission_rate) > 100) {
+    return res.status(400).json({ error: 'Taux de commission invalide (doit être un pourcentage entre 0 et 100).' });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE vendors SET commission_rate = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+      [Number(commission_rate), req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Boutique vendeur introuvable.' });
+    }
+
+    await logActivity(req.user?.id, 'VENDOR_COMMISSION_UPDATE', { id: req.params.id, commission_rate }, req.ip);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du taux de commission.' });
+  }
+});
+
 // PUT /api/admin/vendors/:id/status - Update vendor store status (APPROVED, PENDING, REJECTED)
 router.put('/vendors/:id/status', authenticateToken, requireRole(['ADMIN', 'MANAGER']), async (req: AuthRequest, res) => {
   const { status } = req.body;
