@@ -13,7 +13,7 @@ Le projet est structuré sous forme de monorepo géré avec `pnpm` workspaces :
 - **`apps/admin-nuxt`** : Portail d'administration back-office développé avec Nuxt 3 / Vue 3 pour la gestion des produits, commandes, commissions vendeurs, tarifs Wilayas, contenus, statistiques, logs et sauvegardes.
 - **`apps/web-multivendor`** : Espace dédié aux vendeurs pour la gestion de leur boutique, catalogue produit et suivi des commissions.
 - **`packages/shared`** : Bibliothèque partagée de types TypeScript, énumérations (rôles, statuts de commande), dictionnaire d'internationalisation (FR/AR/RTL) et modèles de données métier.
-- **`docker-compose.yml`** : Orchestration de l'ensemble des services (PostgreSQL 16, Redis 7, API backend, Web Astro public, Admin Nuxt).
+- **`docker-compose.yml`** : Orchestration de l'ensemble des services (PostgreSQL 16, Redis 7, API backend, Web Astro public, Admin Nuxt, Espace Vendeurs Multivendor).
 
 ---
 
@@ -128,6 +128,7 @@ Pour exécuter et déployer l'application, assurez-vous d'avoir installé :
 
 - **Site Public Marketplace (Astro)** : `http://localhost:3000`
 - **Portail Administrateur (Nuxt 3)** : `http://localhost:3001`
+- **Portail Vendeurs (Multivendor Nuxt)** : `http://localhost:3002`
 - **API Backend Express** : `http://localhost:4000`
 - **Base de Données PostgreSQL** : `localhost:5432`
 - **Cache & Session Redis** : `localhost:6379`
@@ -167,7 +168,7 @@ Le fichier `.env` à la racine centralise l'ensemble des configurations :
 
 ### Scripts Monorepo Racine
 - **`pnpm dev`** : Démarrage simultané de toutes les applications en mode développement avec rechargement à chaud.
-- **`pnpm build`** : Compilation de l'ensemble des paquets et applications (`@web-manager/shared`, `api`, `web-astro`, `admin-nuxt`).
+- **`pnpm build`** : Compilation de l'ensemble des paquets et applications (`@web-manager/shared`, `api`, `web-astro`, `admin-nuxt`, `web-multivendor`).
 - **`pnpm test`** : Exécution de l'ensemble de la suite de tests automatisés Jest.
 - **`pnpm lint`** : Analyse et contrôle de la qualité du code.
 - **`pnpm prepare`** : Installation automatique du hook Git `post-merge`.
@@ -184,21 +185,37 @@ Le fichier `.env` à la racine centralise l'ensemble des configurations :
 - **`apps/admin-nuxt`** :
   - `pnpm --filter @web-manager/admin-nuxt dev` : Lance le serveur de dev Nuxt 3 (`http://localhost:3001`).
   - `pnpm --filter @web-manager/admin-nuxt build` : Compile l'application Nuxt 3 pour la production.
+- **`apps/web-multivendor`** :
+  - `pnpm --filter @web-manager/web-multivendor dev` : Lance le serveur de dev Multivendor (`http://localhost:3002`).
+  - `pnpm --filter @web-manager/web-multivendor build` : Compile l'application Multivendor pour la production.
 - **`packages/shared`** :
   - `pnpm --filter @web-manager/shared build` : Compile les types, helpers et i18n FR/AR vers `dist/`.
 
 ---
 
-## Migrations, Base de Données & Sauvegardes
+## Migrations, Base de Données, Déploiement & Sauvegardes
 
 ### Migrations & Initialisation Automatique
 Au démarrage du serveur API (`apps/api`), la connexion à PostgreSQL exécute automatiquement :
 1. La création des tables relationnelles (`users`, `products`, `categories`, `orders`, `order_items`, `cms_pages`, `vendors`, `delivery_rates`, `activity_logs`).
 2. L'amorçage des données (*seeding*) initiales si les tables sont vides (utilisateurs par défaut, catégories, tarifs de livraison pour les 58 Wilayas d'Algérie).
 
+### Procédure de Déploiement Conteneurisé & Zero-Downtime
+1. **Lancement global** :
+   ```bash
+   docker compose up -d --build
+   ```
+2. **Mise à jour sans interruption (*zero-downtime*)** :
+   Redéployez un service individuel sans perturber le reste de la plateforme :
+   ```bash
+   docker compose up -d --build --no-deps api
+   ```
+3. **Sécurité des conteneurs** :
+   Tous les conteneurs s'exécutent avec des images multi-stage légères et sans privilèges root (`USER node`).
+
 ### Endpoints de Sauvegarde & Restauration API
-- **`GET /api/admin/backup`** : Exporte l'intégralité de la base de données sous forme de fichier SQL téléchargeable (Rôle `ADMIN` requis).
-- **`POST /api/admin/restore`** : Restaure la base de données SQL à partir d'un fichier fourni dans la requête (Rôle `ADMIN` requis).
+- **`POST /api/admin/backup`** : Exporte l'intégralité de la base de données sous forme de données structurées (Rôle `ADMIN` requis).
+- **`POST /api/admin/restore`** : Restaure la base de données relationnelle à partir des données de sauvegarde fournies dans la requête (Rôle `ADMIN` requis).
 
 ### Sauvegarde & Restauration manuelle via Docker
 - **Sauvegarde SQL manuelle** :
@@ -288,10 +305,10 @@ L'API backend est exposée sur le port `4000`. Les routes authentifiées requiè
 | **DELETE** | `/api/cms/pages/:id` | `ADMIN` | Suppression d'une page CMS |
 | **GET** | `/api/admin/stats` | `ADMIN`, `MANAGER` | Statistiques du tableau de bord et chiffre d'affaires |
 | **GET** | `/api/admin/logs` | `ADMIN` | Consultation des journaux d'activité d'audit |
-| **GET** | `/api/admin/backup` | `ADMIN` | Export et téléchargement du dump SQL de la base |
-| **POST** | `/api/admin/restore` | `ADMIN` | Restauration de la base de données SQL |
+| **POST** | `/api/admin/backup` | `ADMIN` | Exportation et création d'une sauvegarde de la base |
+| **POST** | `/api/admin/restore` | `ADMIN` | Restauration de la base de données relationnelle |
 | **GET** | `/api/admin/delivery-rates` | `ADMIN`, `MANAGER` | Tarifs de livraison par Wilaya (58 Wilayas) |
-| **PATCH** | `/api/admin/delivery-rates/:wilayaCode` | `ADMIN` | Mise à jour du tarif de livraison d'une Wilaya |
+| **PUT** | `/api/admin/delivery-rates/:id` | `ADMIN`, `MANAGER` | Mise à jour du tarif de livraison d'une Wilaya |
 | **POST** | `/api/admin/ai/assistant` | `ADMIN`, `MANAGER` | Assistant IA pour création de fiche produit et analyse |
 | **GET** | `/api/admin/export/orders` | `ADMIN`, `MANAGER` | Exportation des commandes (formats `json`, `csv`, `sheets`) |
 | **POST** | `/api/admin/export/google-sheets` | `ADMIN`, `MANAGER` | Synchronisation manuelle avec Google Sheets |
