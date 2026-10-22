@@ -366,13 +366,74 @@ describe('Mission 11: Panier Persistent & Commandes Multi-Boutiques API', () => 
     });
   });
 
-  describe('Mission MBA Verification', () => {
-    it('should verify Mission 11 & Mission 13 are marked as Terminée in INDEX.md', () => {
+  describe('Mission 12: Logistique & Grille Tarifaire de Livraison (58 Wilayas)', () => {
+    it('should calculate desk (point relais) shipping fee correctly for Wilaya code', async () => {
+      const mockProduct = { id: 1, name: 'Article Wilaya', price: '5000.00', stock: 10, vendor_id: 1, vendor_commission_rate: '10.00' };
+      const mockDeliveryRate = { wilaya_code: 31, home_fee: '600.00', desk_fee: '400.00' };
+      const mockOrder = {
+        id: 25,
+        order_number: 'CMD-WILAYA-31',
+        shipping_fee: 400,
+        total_amount: 5400,
+        status: 'PAID',
+        payment_method: 'TEST_CARD',
+      };
+
+      mockClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [mockProduct] }) // SELECT product
+        .mockResolvedValueOnce({}) // UPDATE stock
+        .mockResolvedValueOnce({ rows: [mockDeliveryRate] }) // SELECT delivery rate
+        .mockResolvedValueOnce({ rows: [mockOrder] }) // INSERT order
+        .mockResolvedValueOnce({}) // INSERT order_item
+        .mockResolvedValueOnce({}); // COMMIT
+
+      const res = await request(app)
+        .post('/api/orders')
+        .send({
+          customer_name: 'Amine Oran',
+          customer_email: 'amine@example.dz',
+          shipping_address: '[31 - Oran] Centre Ville',
+          wilaya_code: 31,
+          delivery_type: 'desk',
+          items: [{ product_id: 1, quantity: 1 }],
+          test_card_number: '4242 4242 4242 4242',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.order.shipping_fee).toBe(400);
+      expect(res.body.order.total_amount).toBe(5400);
+    });
+
+    it('should allow admin to update delivery rates for a Wilaya', async () => {
+      const mockUpdatedRate = {
+        id: 16,
+        wilaya_code: 16,
+        wilaya_name: 'Alger',
+        home_fee: '500.00',
+        desk_fee: '300.00',
+        is_active: true,
+      };
+
+      (mockedPool.query as jest.Mock).mockResolvedValueOnce({ rows: [mockUpdatedRate] });
+
+      const res = await request(app)
+        .put('/api/admin/delivery-rates/16')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ home_fee: 500, desk_fee: 300 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.home_fee).toBe('500.00');
+      expect(res.body.desk_fee).toBe('300.00');
+    });
+
+    it('should verify Mission 11, Mission 12 & Mission 13 are marked as Terminée in INDEX.md', () => {
       const rootDir = path.resolve(__dirname, '../../..');
       const indexPath = path.join(rootDir, 'missionMBA/INDEX.md');
       const content = fs.readFileSync(indexPath, 'utf-8');
 
       expect(content).toMatch(/\|\s*\*\*11\*\*\s*\|\s*Panier & Commandes Multi-Boutiques\s*\|.*\|\s*Terminée\s*\|/);
+      expect(content).toMatch(/\|\s*\*\*12\*\*\s*\|.*Logistique & Livraison Algérie \(58 Wilayas\).*\|\s*Terminée\s*\|/);
       expect(content).toMatch(/\|\s*\*\*13\*\*\s*\|.*Paiements \(COD\) & Commissions Vendeurs.*\|\s*Terminée\s*\|/);
     });
   });
