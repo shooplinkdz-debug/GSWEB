@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
-describe('Mission 05: Docker & Docker Compose Tests', () => {
+describe('Mission 20: Docker & Docker Compose Containerization Tests', () => {
   const rootDir = path.resolve(__dirname, '../../..');
 
-  test('docker-compose.yml should exist in root directory', () => {
+  test('docker-compose.yml should exist in root directory and define all services with healthchecks', () => {
     const composePath = path.join(rootDir, 'docker-compose.yml');
     expect(fs.existsSync(composePath)).toBe(true);
 
@@ -16,12 +16,39 @@ describe('Mission 05: Docker & Docker Compose Tests', () => {
     expect(content).toContain('api:');
     expect(content).toContain('web-astro:');
     expect(content).toContain('admin-nuxt:');
+    expect(content).toContain('web-multivendor:');
+    expect(content).toContain('healthcheck:');
   });
 
-  test('Dockerfiles should exist for api, web-astro, and admin-nuxt', () => {
-    expect(fs.existsSync(path.join(rootDir, 'apps/api/Dockerfile'))).toBe(true);
-    expect(fs.existsSync(path.join(rootDir, 'apps/web-astro/Dockerfile'))).toBe(true);
-    expect(fs.existsSync(path.join(rootDir, 'apps/admin-nuxt/Dockerfile'))).toBe(true);
+  test('Dockerfiles should exist for api, web-astro, admin-nuxt, and web-multivendor', () => {
+    const apps = ['apps/api', 'apps/web-astro', 'apps/admin-nuxt', 'apps/web-multivendor'];
+
+    apps.forEach((appPath) => {
+      const dockerfilePath = path.join(rootDir, appPath, 'Dockerfile');
+      expect(fs.existsSync(dockerfilePath)).toBe(true);
+
+      const content = fs.readFileSync(dockerfilePath, 'utf-8');
+      expect(content).toContain('FROM node:');
+      expect(content).toContain('AS runner');
+      expect(content).toContain('USER node');
+    });
+  });
+
+  test('.dockerignore files should exist in root and app folders', () => {
+    const ignorePaths = [
+      '.dockerignore',
+      'apps/api/.dockerignore',
+      'apps/web-astro/.dockerignore',
+      'apps/admin-nuxt/.dockerignore',
+      'apps/web-multivendor/.dockerignore',
+    ];
+
+    ignorePaths.forEach((relPath) => {
+      const fullPath = path.join(rootDir, relPath);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      expect(content).toContain('node_modules');
+    });
   });
 
   test('docker compose config should validate without syntax errors', () => {
@@ -35,6 +62,7 @@ describe('Mission 05: Docker & Docker Compose Tests', () => {
       // In environments where docker binary is not installed, fallback to file structure check
       const composeContent = fs.readFileSync(path.join(rootDir, 'docker-compose.yml'), 'utf-8');
       expect(composeContent).toContain('webmanager_postgres');
+      expect(composeContent).toContain('webmanager_api');
     }
   });
 });

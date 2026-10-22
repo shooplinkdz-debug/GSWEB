@@ -1,3 +1,4 @@
+# Multi-stage Dockerfile for WebManager Vendor Portal
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -14,7 +15,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3002
 
-COPY --from=builder /app/apps/web-multivendor/.output ./
+COPY --chown=node:node --from=builder /app/apps/web-multivendor/.output ./
+USER node
 
 EXPOSE 3002
 CMD ["node", "server/index.mjs"]
