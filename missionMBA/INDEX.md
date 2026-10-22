@@ -20,7 +20,7 @@ Ce document présente l'ordre d'exécution, la cartographie des dépendances et 
 | **09** | Catalogue Produits & Catégories | `09_CATALOGUE_PRODUITS.md` | Missions 04, 06 | Terminée |
 | **10** | Boutiques Multi-Vendeurs | `10_BOUTIQUES_VENDEURS.md` | Missions 05, 06, 09 | À faire |
 | **11** | Panier & Commandes Multi-Boutiques | `11_PANIER_COMMANDES.md` | Missions 09, 10 | Terminée |
-| **12** | Logistique & Livraison Algérie (58 Wilayas) | `12_LIVRAISON_ALGERIE.md` | Missions 10, 11 | À faire |
+| **12** | Logistique & Livraison Algérie (58 Wilayas) | `12_LIVRAISON_ALGERIE.md` | Missions 10, 11 | Terminée |
 | **13** | Paiements (COD) & Commissions Vendeurs | `13_PAIEMENT_ET_COMMISSION.md` | Missions 10, 11 | Terminée |
 | **14** | Recherche Intelligente & Assistant IA | `14_RECHERCHE_INTELLIGENTE_IA.md` | Missions 06, 09 | À faire |
 | **15** | Design System Responsive, FR/AR & RTL | `15_INTERFACE_DESIGN_RESPONSIVE.md` | Missions 07, 08 | À faire |
