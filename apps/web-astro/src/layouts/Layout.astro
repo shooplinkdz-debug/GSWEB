@@ -39,6 +39,13 @@ const { title, description = "MBA — Ma Boutique Algérienne. Marketplace 100% 
           <span class="hidden md:inline text-emerald-200">Livraison garantie dans les 58 Wilayas & Paiement à la livraison</span>
         </div>
         <div class="flex items-center gap-4">
+          <div class="hidden lg:flex items-center gap-2 bg-emerald-900/60 px-2.5 py-1 rounded-lg border border-emerald-800 text-[11px]">
+            <span class="text-amber-300 font-bold" data-i18n="topbar.platforms">Plateformes :</span>
+            <a href="http://localhost:3001" target="_blank" class="hover:text-amber-300 transition text-emerald-200 font-medium" data-i18n="topbar.admin">Admin (3001)</a>
+            <span>•</span>
+            <a href="http://localhost:3002" target="_blank" class="hover:text-amber-300 transition text-emerald-200 font-medium" data-i18n="topbar.vendor">Vendeurs (3002)</a>
+          </div>
+          <span>|</span>
           <a href="/vendors" class="hover:text-amber-300 transition font-medium" data-i18n="topbar.sellOnMba">Vendre sur MBA</a>
           <span>|</span>
           <a href="/faq" class="hover:text-emerald-200 transition font-medium" data-i18n="topbar.help">Aide & Support</a>
@@ -267,6 +274,9 @@ const { title, description = "MBA — Ma Boutique Algérienne. Marketplace 100% 
     <script id="mba-global-script">
       const DICT = {
         fr: {
+          'topbar.platforms': 'Plateformes :',
+          'topbar.admin': 'Admin (3001)',
+          'topbar.vendor': 'Vendeurs (3002)',
           'topbar.sellOnMba': 'Vendre sur MBA',
           'topbar.help': 'Aide & Support',
           'header.myAccount': 'Mon compte',
@@ -289,6 +299,9 @@ const { title, description = "MBA — Ma Boutique Algérienne. Marketplace 100% 
           'nav.tracking': 'Suivi de commande'
         },
         ar: {
+          'topbar.platforms': 'المنصات :',
+          'topbar.admin': 'الإدارة (3001)',
+          'topbar.vendor': 'البائعون (3002)',
           'topbar.sellOnMba': 'البيع على MBA',
           'topbar.help': 'المساعدة والدعم',
           'header.myAccount': 'حسابي',

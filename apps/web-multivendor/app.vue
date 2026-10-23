@@ -21,6 +21,14 @@
         </nav>
 
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
+          <!-- Platform Switcher -->
+          <div class="hidden lg:flex items-center space-x-2 rtl:space-x-reverse bg-indigo-950 border border-indigo-800 rounded-xl px-2.5 py-1 text-xs font-semibold">
+            <span class="text-amber-400 font-bold">{{ t.platformSwitcher }}:</span>
+            <a href="http://localhost:3000" target="_blank" class="hover:text-amber-300 transition text-indigo-200">{{ t.publicMarketplace }} (3000)</a>
+            <span class="text-indigo-700">•</span>
+            <a href="http://localhost:3001" target="_blank" class="hover:text-amber-300 transition text-indigo-200">{{ t.adminPortal }} (3001)</a>
+          </div>
+
           <!-- Language Switcher -->
           <div class="flex items-center bg-indigo-950 border border-indigo-800 rounded-xl p-1 text-xs font-bold">
             <button
@@ -95,6 +103,9 @@ const dict = {
     vendors: 'Boutiques Vendeurs',
     vendorSpace: 'Espace Vendeur',
     dashboard: 'Dashboard Vendeur',
+    platformSwitcher: 'Plateformes',
+    publicMarketplace: 'Marketplace',
+    adminPortal: 'Portail Admin',
     footerCopyright: "Plateforme Multi-Vendeurs — Connectée à l'API Gestionnaire Web Manager",
   },
   ar: {
@@ -102,6 +113,9 @@ const dict = {
     vendors: 'دليل المتاجر',
     vendorSpace: 'فضاء البائع',
     dashboard: 'لوحة تحكم البائع',
+    platformSwitcher: 'المنصات',
+    publicMarketplace: 'السوق',
+    adminPortal: 'بوابة الإدارة',
     footerCopyright: 'منصة المتاجر المتعددة — متصلة بالمدير المركزي Web Manager',
   },
 };

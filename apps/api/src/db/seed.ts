@@ -17,6 +17,8 @@ async function main() {
     console.log('• ADMIN         : admin@webmanager.local        / AdminPass123!');
     console.log('• VENDOR 1      : vendor@techstore.local       / VendorPass123! (Boutique: TechStore Direct)');
     console.log('• VENDOR 2      : vendor2@fashionplus.local    / VendorPass123! (Boutique: Fashion Plus)');
+    console.log('• VENDOR 3      : vendor3@autopart.local       / VendorPass123! (Boutique: AutoPart DZ)');
+    console.log('• VENDOR 4      : vendor4@decohouse.local      / VendorPass123! (Boutique: Deco House)');
     console.log('• MANAGER       : manager@webmanager.local      / ManagerPass123!');
     console.log('• CONFIRMATEUR  : confirmateur@webmanager.local / ConfirmateurPass123!');
     console.log('• DEVELOPER     : developer@webmanager.local   / DevPass123!');
