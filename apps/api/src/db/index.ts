@@ -43,51 +43,88 @@ export async function seedDatabase() {
   try {
     const client = await pool.connect();
     try {
-      const res = await client.query('SELECT COUNT(*) FROM users');
-      if (parseInt(res.rows[0].count, 10) === 0) {
-        console.log('Seeding initial data...');
-        const adminHash = await bcrypt.hash('AdminPass123!', 10);
-        const managerHash = await bcrypt.hash('ManagerPass123!', 10);
-        const customerHash = await bcrypt.hash('CustomerPass123!', 10);
-        const vendorHash = await bcrypt.hash('VendorPass123!', 10);
+      console.log('Seeding initial data...');
+      const adminHash = await bcrypt.hash('AdminPass123!', 10);
+      const managerHash = await bcrypt.hash('ManagerPass123!', 10);
+      const confirmateurHash = await bcrypt.hash('ConfirmateurPass123!', 10);
+      const devHash = await bcrypt.hash('DevPass123!', 10);
+      const customerHash = await bcrypt.hash('CustomerPass123!', 10);
+      const vendorHash = await bcrypt.hash('VendorPass123!', 10);
 
-        await client.query(`
-          INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES
-          ('admin@webmanager.local', '${adminHash}', 'Admin', 'User', 'ADMIN'),
-          ('manager@webmanager.local', '${managerHash}', 'Manager', 'User', 'MANAGER'),
-          ('customer@webmanager.local', '${customerHash}', 'John', 'Doe', 'CUSTOMER'),
-          ('vendor@techstore.local', '${vendorHash}', 'TechStore', 'Vendor', 'VENDOR');
-        `);
+      await client.query(`
+        INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES
+        ('admin@webmanager.local', '${adminHash}', 'Admin', 'User', 'ADMIN'),
+        ('manager@webmanager.local', '${managerHash}', 'Manager', 'User', 'MANAGER'),
+        ('confirmateur@webmanager.local', '${confirmateurHash}', 'Confirmateur', 'User', 'CONFIRMATEUR'),
+        ('developer@webmanager.local', '${devHash}', 'Dev', 'User', 'DEVELOPER'),
+        ('customer@webmanager.local', '${customerHash}', 'John', 'Doe', 'CUSTOMER'),
+        ('vendor@techstore.local', '${vendorHash}', 'TechStore', 'Vendor', 'VENDOR'),
+        ('vendor2@fashionplus.local', '${vendorHash}', 'FashionPlus', 'Vendor', 'VENDOR')
+        ON CONFLICT (email) DO NOTHING;
+      `);
 
-        await client.query(`
-          INSERT INTO categories (name, slug, description) VALUES
-          ('Électronique', 'electronique', 'Gadgets et équipements électroniques'),
-          ('Vêtements', 'vetements', 'Mode et habillement'),
-          ('Maison', 'maison', 'Articles pour la maison et déco');
-        `);
+      await client.query(`
+        INSERT INTO categories (name, slug, description) VALUES
+        ('Électronique', 'electronique', 'Gadgets et équipements électroniques'),
+        ('Vêtements', 'vetements', 'Mode et habillement'),
+        ('Maison', 'maison', 'Articles pour la maison et déco')
+        ON CONFLICT (slug) DO NOTHING;
+      `);
 
-        const vendorRes = await client.query(`
+      const vendorUser1 = await client.query(`SELECT id FROM users WHERE email = 'vendor@techstore.local'`);
+      const vendorUser2 = await client.query(`SELECT id FROM users WHERE email = 'vendor2@fashionplus.local'`);
+
+      let vendorId1 = null;
+      let vendorId2 = null;
+
+      if (vendorUser1.rows.length > 0) {
+        const uId1 = vendorUser1.rows[0].id;
+        const v1 = await client.query(`
           INSERT INTO vendors (user_id, company_name, slug, description, logo_url, status) VALUES
-          (4, 'TechStore Direct', 'techstore-direct', 'Vendeur certifié spécialisé en high-tech et accessoires.', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', 'APPROVED')
+          (${uId1}, 'TechStore Direct', 'techstore-direct', 'Vendeur certifié spécialisé en high-tech et accessoires.', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', 'APPROVED')
+          ON CONFLICT (slug) DO NOTHING
           RETURNING id;
         `);
-        const vendorId = vendorRes.rows[0].id;
-
-        await client.query(`
-          INSERT INTO products (category_id, vendor_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url) VALUES
-          (1, ${vendorId}, 'ELEC-001', 'Smartphone Pro Max', 'smartphone-pro-max', 'Téléphone haut de gamme écran OLED 120Hz', 999.99, 15, 3, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9'),
-          (1, ${vendorId}, 'ELEC-002', 'Casque Audio Sans Fil', 'casque-audio-sans-fil', 'Casque réduction de bruit active', 199.99, 4, 5, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e'),
-          (2, NULL, 'VET-001', 'T-shirt Coton Bio', 't-shirt-coton-bio', 'T-shirt 100% coton biologique éco-responsable', 29.99, 50, 10, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518');
-        `);
-
-        await client.query(`
-          INSERT INTO pages (title, slug, content) VALUES
-          ('À propos', 'a-propos', 'Bienvenue sur Web Manager. Notre plateforme offre une solution complète pour la gestion e-commerce.'),
-          ('Mentions Légales', 'mentions-legales', 'Éditeur du site : Web Manager Inc. Hébergement local et conteneurisé.');
-        `);
-
-        console.log('Database seeded successfully.');
+        if (v1.rows.length > 0) {
+          vendorId1 = v1.rows[0].id;
+        } else {
+          const vExisting = await client.query(`SELECT id FROM vendors WHERE slug = 'techstore-direct'`);
+          if (vExisting.rows.length > 0) vendorId1 = vExisting.rows[0].id;
+        }
       }
+
+      if (vendorUser2.rows.length > 0) {
+        const uId2 = vendorUser2.rows[0].id;
+        const v2 = await client.query(`
+          INSERT INTO vendors (user_id, company_name, slug, description, logo_url, status) VALUES
+          (${uId2}, 'Fashion Plus', 'fashion-plus', 'Boutique spécialisée en habillement et accessoires de mode.', 'https://images.unsplash.com/photo-1441986300917-64674bd600d8', 'APPROVED')
+          ON CONFLICT (slug) DO NOTHING
+          RETURNING id;
+        `);
+        if (v2.rows.length > 0) {
+          vendorId2 = v2.rows[0].id;
+        } else {
+          const vExisting2 = await client.query(`SELECT id FROM vendors WHERE slug = 'fashion-plus'`);
+          if (vExisting2.rows.length > 0) vendorId2 = vExisting2.rows[0].id;
+        }
+      }
+
+      await client.query(`
+        INSERT INTO products (category_id, vendor_id, sku, name, slug, description, price, stock, low_stock_threshold, image_url) VALUES
+        (1, ${vendorId1 || 'NULL'}, 'ELEC-001', 'Smartphone Pro Max', 'smartphone-pro-max', 'Téléphone haut de gamme écran OLED 120Hz', 999.99, 15, 3, 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9'),
+        (1, ${vendorId1 || 'NULL'}, 'ELEC-002', 'Casque Audio Sans Fil', 'casque-audio-sans-fil', 'Casque réduction de bruit active', 199.99, 4, 5, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e'),
+        (2, ${vendorId2 || 'NULL'}, 'VET-001', 'T-shirt Coton Bio', 't-shirt-coton-bio', 'T-shirt 100% coton biologique éco-responsable', 29.99, 50, 10, 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518')
+        ON CONFLICT (slug) DO NOTHING;
+      `);
+
+      await client.query(`
+        INSERT INTO pages (title, slug, content) VALUES
+        ('À propos', 'a-propos', 'Bienvenue sur Web Manager. Notre plateforme offre une solution complète pour la gestion e-commerce.'),
+        ('Mentions Légales', 'mentions-legales', 'Éditeur du site : Web Manager Inc. Hébergement local et conteneurisé.')
+        ON CONFLICT (slug) DO NOTHING;
+      `);
+
+      console.log('Database seeded successfully.');
 
       const delivRes = await client.query('SELECT COUNT(*) FROM delivery_rates');
       if (parseInt(delivRes.rows[0].count, 10) === 0) {
