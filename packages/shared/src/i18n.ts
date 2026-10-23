@@ -15,6 +15,14 @@ export interface Translations {
     cmsPages: string;
     logsBackup: string;
     aiAssistant: string;
+    rolesPermissions: string;
+    subscriptions: string;
+    finances: string;
+    reviews: string;
+    adsBanners: string;
+    deliveryCompanies: string;
+    settings: string;
+    confirmateurSpace: string;
   };
   reassurance: {
     delivery58: string;
@@ -24,6 +32,14 @@ export interface Translations {
     verifiedVendors: string;
     verifiedVendorsDesc: string;
     currency: string;
+  };
+  roles: {
+    admin: string;
+    manager: string;
+    developer: string;
+    seller: string;
+    confirmateur: string;
+    customer: string;
   };
   common: {
     search: string;
@@ -46,6 +62,11 @@ export interface Translations {
     catalogProducts: string;
     lowStockAlert: string;
     recentActivity: string;
+    impersonationBanner: string;
+    exitAssistance: string;
+    balance: string;
+    benefits: string;
+    expenses: string;
   };
 }
 
@@ -65,6 +86,14 @@ export const translations: Record<SupportedLanguage, Translations> = {
       cmsPages: 'Pages CMS',
       logsBackup: 'Journaux & Backup',
       aiAssistant: 'Assistant IA',
+      rolesPermissions: 'Rôles & Permissions',
+      subscriptions: 'Abonnements',
+      finances: 'Finances & Solde',
+      reviews: 'Avis & Étoiles',
+      adsBanners: 'Publicités & Bannières',
+      deliveryCompanies: 'Sociétés de Livraison',
+      settings: 'Paramètres & Support',
+      confirmateurSpace: 'Espace Confirmateur',
     },
     reassurance: {
       delivery58: 'Livraison 58 Wilayas',
@@ -74,6 +103,14 @@ export const translations: Record<SupportedLanguage, Translations> = {
       verifiedVendors: 'Boutiques Vérifiées',
       verifiedVendorsDesc: 'Vendeurs indépendants et commerçants algériens certifiés.',
       currency: 'Dinars Algériens (DZD)',
+    },
+    roles: {
+      admin: 'Administrateur',
+      manager: 'Manager',
+      developer: 'Développeur',
+      seller: 'Vendeur',
+      confirmateur: 'Confirmateur',
+      customer: 'Client',
     },
     common: {
       search: 'Rechercher',
@@ -96,6 +133,11 @@ export const translations: Record<SupportedLanguage, Translations> = {
       catalogProducts: 'Produits au Catalogue',
       lowStockAlert: 'Alerte Stock Bas',
       recentActivity: "Aperçu de l'Activité Récente",
+      impersonationBanner: "Mode Assistance Administrateur actif : vous visualisez le compte de",
+      exitAssistance: "Quitter l'assistance",
+      balance: 'Solde Net',
+      benefits: 'Total Bénéfices',
+      expenses: 'Total Dépenses',
     },
   },
   ar: {
@@ -113,6 +155,14 @@ export const translations: Record<SupportedLanguage, Translations> = {
       cmsPages: 'صفحات الموقع',
       logsBackup: 'السجلات والنسخ الاحتياطي',
       aiAssistant: 'المساعد الذكي',
+      rolesPermissions: 'الأدوار والصلاحيات',
+      subscriptions: 'الاشتراكات',
+      finances: 'المالية والرصيد',
+      reviews: 'التقييمات والمراجعات',
+      adsBanners: 'الإعلانات واللافتات',
+      deliveryCompanies: 'شركات التوصيل',
+      settings: 'الإعدادات والدعم',
+      confirmateurSpace: 'فضاء التأكيد',
     },
     reassurance: {
       delivery58: 'التوصيل لـ 58 ولاية',
@@ -122,6 +172,14 @@ export const translations: Record<SupportedLanguage, Translations> = {
       verifiedVendors: 'متاجر معتمدة',
       verifiedVendorsDesc: 'بائعون مستقلون وتجار جزائريون موثوقون.',
       currency: 'دينار جزائري (د.ج)',
+    },
+    roles: {
+      admin: 'مسؤول',
+      manager: 'مدير',
+      developer: 'مطور',
+      seller: 'بائع',
+      confirmateur: 'مؤكد طلبات',
+      customer: 'زبون',
     },
     common: {
       search: 'بحث',
@@ -144,6 +202,11 @@ export const translations: Record<SupportedLanguage, Translations> = {
       catalogProducts: 'المنتجات المسجلة',
       lowStockAlert: 'تنبيه مخزون منخفض',
       recentActivity: 'نظرة عامة على النشاط الحديث',
+      impersonationBanner: 'وضع المساعدة المباشر نشط: أنت تتبادل العرض لحساب',
+      exitAssistance: 'إنهاء المساعدة',
+      balance: 'الرصيد الصافي',
+      benefits: 'إجمالي الأرباح',
+      expenses: 'إجمالي المصاريف',
     },
   },
 };

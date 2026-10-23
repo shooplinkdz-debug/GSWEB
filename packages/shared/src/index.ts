@@ -24,10 +24,13 @@ export enum OrderStatus {
 }
 
 export interface User {
-  id: string;
+  id: string | number;
   email: string;
   password_hash?: string;
+  first_name?: string;
+  last_name?: string;
   role: UserRole;
+  is_active?: boolean;
   created_at?: string | Date;
   updated_at?: string | Date;
 }
@@ -42,17 +45,21 @@ export interface Vendor {
   slug: string;
   description?: string;
   logo_url?: string;
+  banner_url?: string;
   phone?: string;
   wilaya?: string;
   rating?: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  commission_rate?: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN' | 'SUSPENDED';
   created_at?: string | Date;
   updated_at?: string | Date;
 }
 
 export interface Product {
-  id: string;
+  id: string | number;
   vendor_id?: string | number;
+  category_id?: number;
+  sku?: string;
   name: string;
   slug: string;
   description?: string;
@@ -60,33 +67,44 @@ export interface Product {
   stock: number;
   low_stock_threshold: number;
   image_url?: string;
+  is_published?: boolean;
   created_at?: string | Date;
   updated_at?: string | Date;
 }
 
 export interface OrderItem {
-  id: string;
-  order_id: string;
-  product_id: string;
+  id: string | number;
+  order_id: string | number;
+  product_id: string | number;
+  vendor_id?: string | number;
+  product_name: string;
   quantity: number;
   unit_price: number;
+  commission_rate?: number;
+  commission_amount?: number;
+  vendor_payout?: number;
 }
 
 export interface Order {
-  id: string;
+  id: string | number;
   order_number: string;
-  user_id: string;
+  user_id?: string | number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
+  shipping_address: string;
   total_amount: number;
+  shipping_fee?: number;
   status: OrderStatus;
-  customer_email?: string;
-  shipping_address?: string;
+  payment_method?: string;
+  is_confirmed?: boolean;
   created_at?: string | Date;
   updated_at?: string | Date;
   items?: OrderItem[];
 }
 
 export interface Page {
-  id: string;
+  id: string | number;
   title: string;
   slug: string;
   content: string;
@@ -96,8 +114,8 @@ export interface Page {
 }
 
 export interface AuditLog {
-  id: string;
-  user_id?: string;
+  id: string | number;
+  user_id?: string | number;
   action: string;
   ip_address?: string;
   details?: Record<string, unknown> | string;
@@ -114,6 +132,125 @@ export interface DeliveryRate {
   is_active: boolean;
   created_at?: string | Date;
   updated_at?: string | Date;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  is_system?: boolean;
+  created_at?: string | Date;
+}
+
+export interface Permission {
+  id: number;
+  code: string;
+  module: string;
+  action: string;
+  name: string;
+  description?: string;
+}
+
+export interface Subscription {
+  id: number;
+  vendor_id: number;
+  vendor_name?: string;
+  plan_name: string;
+  start_date: string | Date;
+  end_date: string | Date;
+  status: 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'SUSPENDED';
+  notes?: string;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
+export interface FinancialMovement {
+  id: number;
+  vendor_id: number;
+  type: 'BENEFIT' | 'EXPENSE';
+  amount: number;
+  description: string;
+  category: string;
+  status: 'PENDING' | 'VALIDATED' | 'CANCELLED';
+  receipt_url?: string;
+  created_by?: number;
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
+export interface ProductReview {
+  id: number;
+  product_id: number;
+  product_name?: string;
+  user_id: number;
+  user_name?: string;
+  rating: number;
+  comment?: string;
+  photos?: string[];
+  is_verified_purchase?: boolean;
+  status: 'APPROVED' | 'PENDING' | 'HIDDEN';
+  created_at?: string | Date;
+}
+
+export interface AdBanner {
+  id: number;
+  title: string;
+  image_url: string;
+  video_url?: string;
+  target_url?: string;
+  position: string;
+  priority: number;
+  is_active: boolean;
+  start_date?: string | Date;
+  end_date?: string | Date;
+  created_at?: string | Date;
+}
+
+export interface DeliveryCompany {
+  id: number;
+  name: string;
+  phone?: string;
+  email?: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  api_key?: string;
+  config?: string;
+  created_at?: string | Date;
+}
+
+export interface OrderStatusHistory {
+  id: number;
+  order_id: number;
+  old_status?: string;
+  new_status: string;
+  changed_by?: number;
+  notes?: string;
+  created_at?: string | Date;
+}
+
+export interface Notification {
+  id: number;
+  user_id?: number;
+  target_role?: string;
+  type: string;
+  summary: string;
+  link?: string;
+  is_read: boolean;
+  created_at?: string | Date;
+}
+
+export interface PlatformSettings {
+  support_email?: string;
+  support_phone?: string;
+  support_hours?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  tiktok_url?: string;
+  youtube_url?: string;
+  twitter_url?: string;
+  meta_pixel_id?: string;
+  google_analytics_id?: string;
+  tiktok_pixel_id?: string;
+  [key: string]: string | undefined;
 }
 
 export * from './i18n.js';
