@@ -23,6 +23,10 @@ export interface Translations {
     deliveryCompanies: string;
     settings: string;
     confirmateurSpace: string;
+    platformSwitcher: string;
+    publicMarketplace: string;
+    adminPortal: string;
+    vendorPortal: string;
   };
   reassurance: {
     delivery58: string;
@@ -94,6 +98,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
       deliveryCompanies: 'Sociétés de Livraison',
       settings: 'Paramètres & Support',
       confirmateurSpace: 'Espace Confirmateur',
+      platformSwitcher: 'Changer de Plateforme',
+      publicMarketplace: 'Marketplace Public',
+      adminPortal: 'Portail Administration',
+      vendorPortal: 'Espace Vendeurs',
     },
     reassurance: {
       delivery58: 'Livraison 58 Wilayas',
@@ -163,6 +171,10 @@ export const translations: Record<SupportedLanguage, Translations> = {
       deliveryCompanies: 'شركات التوصيل',
       settings: 'الإعدادات والدعم',
       confirmateurSpace: 'فضاء التأكيد',
+      platformSwitcher: 'تبديل المنصة',
+      publicMarketplace: 'السوق العام',
+      adminPortal: 'بوابة الإدارة',
+      vendorPortal: 'فضاء البائعين',
     },
     reassurance: {
       delivery58: 'التوصيل لـ 58 ولاية',

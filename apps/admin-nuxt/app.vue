@@ -34,6 +34,14 @@
         </nav>
 
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
+          <!-- Platform Switcher -->
+          <div class="hidden xl:flex items-center space-x-2 rtl:space-x-reverse bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1 text-xs font-semibold">
+            <span class="text-amber-400 font-bold">{{ t.platformSwitcher }}:</span>
+            <a href="http://localhost:3000" target="_blank" class="hover:text-amber-400 transition text-slate-300">{{ t.publicMarketplace }} (3000)</a>
+            <span class="text-slate-600">•</span>
+            <a href="http://localhost:3002" target="_blank" class="hover:text-amber-400 transition text-slate-300">{{ t.vendorPortal }} (3002)</a>
+          </div>
+
           <!-- Language Switcher -->
           <div class="flex items-center bg-slate-800 border border-slate-700 rounded-xl p-1 text-xs font-bold">
             <button
@@ -121,6 +129,9 @@ const dict = {
     cmsPages: 'Pages CMS',
     logsBackup: 'Journaux & Backup',
     aiAssistant: 'Assistant IA',
+    platformSwitcher: 'Plateformes',
+    publicMarketplace: 'Marketplace',
+    vendorPortal: 'Vendeurs',
     impersonationBanner: 'Mode assistance active : vous visualisez le compte de',
     exitAssistance: 'Quitter assistance',
     footerText: "Panel d'Administration MBA — MA BOUTIQUE ALGÉRIENNE",
@@ -140,6 +151,9 @@ const dict = {
     cmsPages: 'صفحات الموقع',
     logsBackup: 'السجلات والنسخ',
     aiAssistant: 'المساعد الذكي',
+    platformSwitcher: 'المنصات',
+    publicMarketplace: 'السوق',
+    vendorPortal: 'البائعون',
     impersonationBanner: 'وضع المساعدة المباشر نشط لحساب',
     exitAssistance: 'إنهاء المساعدة',
     footerText: 'لوحة التحكم والإدارة — متجري الجزائري MBA',

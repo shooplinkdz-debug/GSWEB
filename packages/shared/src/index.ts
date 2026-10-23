@@ -2,6 +2,8 @@
  * Shared domain models, types, and constants for Web Manager Monorepo
  */
 
+declare const process: any;
+
 export enum UserRole {
   ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
@@ -254,6 +256,20 @@ export interface PlatformSettings {
 }
 
 export * from './i18n.js';
+
+const getEnvVar = (key: string, fallback: string): string => {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key] as string;
+  }
+  return fallback;
+};
+
+export const PLATFORM_URLS = {
+  marketplace: getEnvVar('MARKETPLACE_URL', 'http://localhost:3000'),
+  admin: getEnvVar('ADMIN_URL', 'http://localhost:3001'),
+  vendor: getEnvVar('VENDOR_URL', 'http://localhost:3002'),
+  api: getEnvVar('API_URL', 'http://localhost:4000'),
+};
 
 export const MONOREPO_INFO = {
   name: 'web-manager-monorepo',
