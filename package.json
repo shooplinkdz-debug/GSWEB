@@ -8,6 +8,7 @@
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive run test",
     "lint": "pnpm --recursive run lint",
+    "seed:db": "pnpm --filter @web-manager/api seed",
     "prepare": "mkdir -p .git/hooks && cp -f scripts/post-merge.sh .git/hooks/post-merge && chmod +x .git/hooks/post-merge scripts/post-merge.sh"
   },
   "workspaces": [

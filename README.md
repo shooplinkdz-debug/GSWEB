@@ -171,6 +171,7 @@ Le fichier `.env` à la racine centralise l'ensemble des configurations :
 - **`pnpm build`** : Compilation de l'ensemble des paquets et applications (`@web-manager/shared`, `api`, `web-astro`, `admin-nuxt`, `web-multivendor`).
 - **`pnpm test`** : Exécution de l'ensemble de la suite de tests automatisés Jest.
 - **`pnpm lint`** : Analyse et contrôle de la qualité du code.
+- **`pnpm seed:db`** : Exécution des migrations SQL et amorçage de la base de données avec les comptes de test (Admin, Vendeurs, Manager, Confirmateur, etc.).
 - **`pnpm prepare`** : Installation automatique du hook Git `post-merge`.
 
 ### Scripts par Module
@@ -352,6 +353,7 @@ Le projet **Web Manager / Ma Boutique Algérienne** couvre l'ensemble des 21 mis
 ---
 
 ## Documentation Complémentaire
+- `TEST_ACCOUNTS.md` : Guide d'initialisation de la base locale et identifiants des comptes de test (`ADMIN`, `VENDOR`, `MANAGER`, `CONFIRMATEUR`, etc.).
 - `CAHIER-DES-CHARGES.md` : Cahier des charges et spécifications métier.
 - `missionMBA/` : Dossier contenant l'ensemble des spécifications par mission (00 à 21).
 - `missionMBA/INDEX.md` : Suivi global de l'avancement des missions MBA.

@@ -61,6 +61,19 @@ describe('Mission 06: PostgreSQL, Schema and Migrations Tests', () => {
     expect(typeof seedDatabase).toBe('function');
   });
 
+  test('Standalone seed script file src/db/seed.ts should exist and contain test accounts', () => {
+    const seedFilePath = path.join(__dirname, 'db/seed.ts');
+    expect(fs.existsSync(seedFilePath)).toBe(true);
+    const content = fs.readFileSync(seedFilePath, 'utf-8');
+    expect(content).toContain('admin@webmanager.local');
+    expect(content).toContain('vendor@techstore.local');
+    expect(content).toContain('vendor2@fashionplus.local');
+    expect(content).toContain('manager@webmanager.local');
+    expect(content).toContain('confirmateur@webmanager.local');
+    expect(content).toContain('developer@webmanager.local');
+    expect(content).toContain('customer@webmanager.local');
+  });
+
   test('runMigrations and seedDatabase should handle offline database gracefully without throwing unhandled rejection', async () => {
     // When DB is offline or mock fails, functions catch and log error
     await expect(runMigrations()).resolves.not.toThrow();
