@@ -9,6 +9,15 @@ import orderRoutes from './routes/orders';
 import cartRoutes from './routes/cart';
 import adminRoutes from './routes/admin';
 import vendorRoutes from './routes/vendors';
+import rbacRoutes from './routes/rbac';
+import impersonateRoutes from './routes/impersonate';
+import subscriptionRoutes from './routes/subscriptions';
+import financeRoutes from './routes/finances';
+import reviewRoutes from './routes/reviews';
+import adRoutes from './routes/ads';
+import deliveryRoutes from './routes/delivery';
+import settingRoutes from './routes/settings';
+import notificationRoutes from './routes/notifications';
 import { runMigrations, seedDatabase } from './db';
 
 dotenv.config();
@@ -41,6 +50,16 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', adminRoutes);
 app.use('/api/vendors', vendorRoutes);
+app.use('/api/rbac', rbacRoutes);
+app.use('/api/admin/impersonate', impersonateRoutes);
+app.use('/api/admin/subscriptions', subscriptionRoutes);
+app.use('/api/vendors/me/subscription', subscriptionRoutes);
+app.use('/api/finances', financeRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/ads', adRoutes);
+app.use('/api/delivery', deliveryRoutes);
+app.use('/api/settings', settingRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Centralized 404 fallback route handler
 app.use((req, res) => {
